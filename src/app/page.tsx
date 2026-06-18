@@ -34,7 +34,7 @@ export default function AuthPage() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <h1 className="text-2xl font-bold text-center mb-2">💰 Centro de Costos</h1>
-        <p className="text-gray-400 text-center mb-8 text-sm">Controlá tus gastos desde el celu</p>
+        <p className="text-[#8b949e] text-center mb-8 text-sm">Controlá tus gastos desde el celu</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -43,7 +43,7 @@ export default function AuthPage() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
-            className="w-full bg-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-4 py-3 text-white placeholder-[#6e7681] focus:outline-none focus:ring-2 focus:ring-[#22d3ee]"
           />
           <input
             type="password"
@@ -51,11 +51,11 @@ export default function AuthPage() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
-            className="w-full bg-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-4 py-3 text-white placeholder-[#6e7681] focus:outline-none focus:ring-2 focus:ring-[#22d3ee]"
           />
 
           {error && (
-            <p className={`text-sm text-center ${error.includes('Revisá') ? 'text-green-400' : 'text-red-400'}`}>
+            <p className={`text-sm text-center ${error.includes('Revisá') ? 'text-[#22d3ee]' : 'text-red-400'}`}>
               {error}
             </p>
           )}
@@ -63,7 +63,7 @@ export default function AuthPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-xl px-4 py-3 font-semibold transition-colors"
+            className="w-full bg-[#22d3ee] hover:bg-[#06b6d4] text-[#0d1117] disabled:opacity-50 rounded-xl px-4 py-3 font-semibold transition-colors"
           >
             {loading ? 'Cargando...' : isLogin ? 'Ingresar' : 'Registrarse'}
           </button>
@@ -71,7 +71,7 @@ export default function AuthPage() {
 
         <button
           onClick={() => { setIsLogin(!isLogin); setError('') }}
-          className="w-full mt-4 text-gray-400 hover:text-white text-sm transition-colors"
+          className="w-full mt-4 text-[#6e7681] hover:text-white text-sm transition-colors"
         >
           {isLogin ? '¿No tenés cuenta? Registrate' : '¿Ya tenés cuenta? Ingresá'}
         </button>

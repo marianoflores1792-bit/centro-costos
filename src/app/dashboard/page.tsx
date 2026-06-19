@@ -498,7 +498,7 @@ export default function Dashboard() {
                         outerRadius={85}
                         paddingAngle={3}
                         dataKey="value"
-                        onClick={(d) => setActiveCategory(activeCategory === d.name ? null : d.name)}
+                        onClick={(d) => setActiveCategory(activeCategory === d.name ? null : (d.name ?? null))}
                         style={{ cursor: 'pointer' }}
                       >
                         {byCategory.map((entry, i) => (

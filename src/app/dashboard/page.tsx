@@ -511,7 +511,7 @@ export default function Dashboard() {
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value: number) => [formatCLP(value), '']}
+                        formatter={(value: unknown) => [formatCLP(value as number), '']}
                         contentStyle={{ background: '#21262d', border: 'none', borderRadius: 8, color: '#e6edf3', fontSize: 12 }}
                       />
                       <Legend

@@ -51,11 +51,13 @@ export default function Dashboard() {
 
       let myProf = profiles.find(p => p.id === user.id)
       if (!myProf) {
-        myProf = { id: user.id, email: user.email || '', display_name: null, start_date: new Date().toISOString().split('T')[0] }
-        await supabase.from('profiles').upsert(myProf)
+        const newProf = { id: user.id, email: user.email || '', display_name: null, start_date: new Date().toISOString().split('T')[0] }
+        await supabase.from('profiles').upsert(newProf)
+        myProf = newProf
       }
+      if (!myProf.email) myProf.email = user.email || ''
       setMe(myProf)
-      setNameInput(myProf.display_name || myProf.email.split('@')[0])
+      setNameInput(myProf.display_name || myProf.email?.split('@')[0] || '')
 
       // El otro usuario es el primero que no soy yo
       const otherProf = profiles.find(p => p.id !== user.id) || null
@@ -136,8 +138,8 @@ export default function Dashboard() {
   const getDayCheckin = (checkins: CheckIn[], day: number) => checkins.find(c => c.day === day)?.tasks || []
   const getPerfectDays = (checkins: CheckIn[]) => checkins.filter(c => c.tasks.length === TASKS.length).length
 
-  const myName = (me?.display_name || me?.email.split('@')[0] || 'P1').toUpperCase().slice(0, 10)
-  const otherName = (other?.display_name || other?.email.split('@')[0] || 'P2').toUpperCase().slice(0, 10)
+  const myName = (me?.display_name || me?.email?.split('@')[0] || 'P1').toUpperCase().slice(0, 10)
+  const otherName = (other?.display_name || other?.email?.split('@')[0] || 'P2').toUpperCase().slice(0, 10)
 
   if (loading) {
     return (

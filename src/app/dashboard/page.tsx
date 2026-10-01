@@ -13,7 +13,7 @@ const TASKS = [
   { id: 'photo', emoji: '📸', label: 'FOTO DE PROGRESO' },
 ]
 
-const APOYOS = ['💪 VAMOS!', '🔥 LO ESTAS LOGRANDO!', '⭐ ORGULLOSA DE VOS!', '🏆 SIGUE ASI!', '❤️ JUNTAS LO LOGRAMOS!']
+const APOYOS = ['🔥 VAMOS QUE NO LLEGAMOS AL DIA 75 DURMIENDO!', '😂 RECUERDA: YO TAMBIEN ESTOY CANSADA Y LO HICE IGUAL', '🥗 ESA PIZZA NO CUENTA COMO DIETA...', '📸 LA FOTO NO SE SACA SOLA!']
 
 type Profile = { id: string; email: string; display_name: string | null; start_date: string }
 type CheckIn = { user_id: string; day: number; tasks: string[] }

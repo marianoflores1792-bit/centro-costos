@@ -30,111 +30,128 @@ export default function AuthPage() {
       } else if (data.user) {
         await supabase.from('profiles').upsert({
           id: data.user.id,
-          email: email,
+          email,
           friend_email: friendEmail || null,
           start_date: new Date().toISOString().split('T')[0],
           display_name: null,
         })
-        setError('Revisá tu email para confirmar la cuenta')
+        setError('CHEQUEÁ TU EMAIL!')
       }
     }
     setLoading(false)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
-      {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, #22d3ee 0%, transparent 70%)' }} />
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'var(--bg)' }}>
+      <div className="stars" />
+      <div className="scanlines" />
 
-      <div className="w-full max-w-sm relative z-10">
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-glow)', boxShadow: '0 0 30px var(--accent-glow)' }}>
-            <span className="text-3xl">🔥</span>
+      <div className="relative z-10 w-full max-w-xs">
+        {/* Title */}
+        <div className="text-center mb-8">
+          <div className="text-4xl mb-3">🔥</div>
+          <div style={{ fontFamily: 'var(--pixel)', color: 'var(--yellow)', fontSize: '14px', lineHeight: '1.8', textShadow: '3px 3px 0 #7a3a00' }}>
+            RETO
           </div>
-          <h1 className="text-3xl font-black tracking-tight gradient-text">RETO 75 DÍAS</h1>
-          <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
-            {isLogin ? 'Continuá tu reto' : 'Empezá el reto con tu amiga'}
-          </p>
+          <div style={{ fontFamily: 'var(--pixel)', color: 'var(--yellow)', fontSize: '20px', lineHeight: '1.8', textShadow: '3px 3px 0 #7a3a00' }}>
+            75 DIAS
+          </div>
+          <div className="mt-2" style={{ color: 'var(--cyan)', fontSize: '8px', letterSpacing: '2px' }}>
+            {isLogin ? '— INSERT COIN —' : '— NEW PLAYER —'}
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <input
-            type="email"
-            placeholder="Tu email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
-            style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border)',
-              color: 'var(--text-primary)',
-            }}
-            onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-            onBlur={e => e.target.style.borderColor = 'var(--border)'}
-          />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
-            style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border)',
-              color: 'var(--text-primary)',
-            }}
-            onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-            onBlur={e => e.target.style.borderColor = 'var(--border)'}
-          />
-
-          {!isLogin && (
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label style={{ color: 'var(--cyan)', fontSize: '8px', display: 'block', marginBottom: '6px' }}>EMAIL</label>
             <input
               type="email"
-              placeholder="Email de tu amiga (opcional)"
-              value={friendEmail}
-              onChange={e => setFriendEmail(e.target.value)}
-              className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              className="w-full px-3 py-2.5 focus:outline-none"
               style={{
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border)',
-                color: 'var(--text-primary)',
+                background: 'var(--bg2)',
+                border: '3px solid var(--gray)',
+                color: 'var(--white)',
+                fontFamily: 'var(--pixel)',
+                fontSize: '9px',
               }}
-              onFocus={e => e.target.style.borderColor = 'var(--purple)'}
-              onBlur={e => e.target.style.borderColor = 'var(--border)'}
+              onFocus={e => e.target.style.borderColor = 'var(--cyan)'}
+              onBlur={e => e.target.style.borderColor = 'var(--gray)'}
             />
+          </div>
+
+          <div>
+            <label style={{ color: 'var(--cyan)', fontSize: '8px', display: 'block', marginBottom: '6px' }}>PASSWORD</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              className="w-full px-3 py-2.5 focus:outline-none"
+              style={{
+                background: 'var(--bg2)',
+                border: '3px solid var(--gray)',
+                color: 'var(--white)',
+                fontFamily: 'var(--pixel)',
+                fontSize: '9px',
+              }}
+              onFocus={e => e.target.style.borderColor = 'var(--cyan)'}
+              onBlur={e => e.target.style.borderColor = 'var(--gray)'}
+            />
+          </div>
+
+          {!isLogin && (
+            <div>
+              <label style={{ color: 'var(--purple)', fontSize: '8px', display: 'block', marginBottom: '6px' }}>EMAIL AMIGA (OPC)</label>
+              <input
+                type="email"
+                value={friendEmail}
+                onChange={e => setFriendEmail(e.target.value)}
+                className="w-full px-3 py-2.5 focus:outline-none"
+                style={{
+                  background: 'var(--bg2)',
+                  border: '3px solid var(--gray)',
+                  color: 'var(--white)',
+                  fontFamily: 'var(--pixel)',
+                  fontSize: '9px',
+                }}
+                onFocus={e => e.target.style.borderColor = 'var(--purple)'}
+                onBlur={e => e.target.style.borderColor = 'var(--gray)'}
+              />
+            </div>
           )}
 
           {error && (
-            <p className="text-sm text-center" style={{ color: error.includes('Revisá') ? 'var(--accent)' : '#f87171' }}>
+            <div className="text-center py-2" style={{ color: error.includes('EMAIL') ? 'var(--green)' : 'var(--red)', fontSize: '8px', border: `2px solid ${error.includes('EMAIL') ? 'var(--green)' : 'var(--red)'}`, background: 'var(--bg2)' }}>
               {error}
-            </p>
+            </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl px-4 py-3 font-bold text-sm tracking-wide transition-all disabled:opacity-50"
+            className="pixel-btn w-full py-3 font-bold disabled:opacity-50"
             style={{
-              background: 'linear-gradient(135deg, #22d3ee, #06b6d4)',
-              color: '#050810',
-              boxShadow: '0 0 20px var(--accent-glow)',
+              background: 'var(--yellow)',
+              color: '#0a0a1a',
+              fontFamily: 'var(--pixel)',
+              fontSize: '9px',
+              letterSpacing: '1px',
             }}
           >
-            {loading ? 'Cargando...' : isLogin ? 'INGRESAR' : 'EMPEZAR EL RETO'}
+            {loading ? 'LOADING...' : isLogin ? '▶ PLAY' : '▶ START'}
           </button>
         </form>
 
         <button
           onClick={() => { setIsLogin(!isLogin); setError('') }}
-          className="w-full mt-4 text-sm transition-colors"
-          style={{ color: 'var(--text-muted)' }}
+          className="w-full mt-6 blink"
+          style={{ color: 'var(--gray)', fontFamily: 'var(--pixel)', fontSize: '7px' }}
         >
-          {isLogin ? '¿No tenés cuenta? Registrate' : '¿Ya tenés cuenta? Ingresá'}
+          {isLogin ? '[ NEW PLAYER? PRESS HERE ]' : '[ CONTINUE? PRESS HERE ]'}
         </button>
       </div>
     </div>

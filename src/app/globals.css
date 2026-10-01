@@ -1,53 +1,100 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #050810;
-  --bg-secondary: #0a0e1a;
-  --bg-tertiary: #0f1525;
-  --bg-hover: #151c30;
-  --text-primary: #e8edf8;
-  --text-secondary: #7a85a0;
-  --text-muted: #4a5268;
-  --border: #1a2035;
-  --border-glow: #22d3ee40;
-  --accent: #22d3ee;
-  --accent-hover: #06b6d4;
-  --accent-glow: #22d3ee20;
-  --purple: #7c3aed;
-  --purple-glow: #7c3aed20;
-  --green: #10d98a;
-  --green-glow: #10d98a20;
+  --bg: #0a0a1a;
+  --bg2: #0f0f2a;
+  --bg3: #1a1a3a;
+  --yellow: #f7c948;
+  --orange: #f97316;
+  --cyan: #22d3ee;
+  --green: #22c55e;
+  --red: #ef4444;
+  --purple: #a855f7;
+  --white: #ffffff;
+  --gray: #4a4a7a;
+  --pixel: 'Press Start 2P', monospace;
 }
+
+* { image-rendering: pixelated; }
 
 body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: 'Inter', Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--pixel);
+  font-size: 10px;
 }
 
-.glow-accent {
-  box-shadow: 0 0 20px var(--accent-glow), 0 0 40px var(--accent-glow);
+/* Pixel border effect */
+.pixel-box {
+  border: 4px solid var(--yellow);
+  box-shadow:
+    0 0 0 4px var(--bg),
+    0 0 0 8px var(--yellow),
+    4px 4px 0 8px rgba(0,0,0,0.5);
+  image-rendering: pixelated;
 }
 
-.glow-border {
-  border: 1px solid var(--border-glow);
-  box-shadow: 0 0 15px var(--accent-glow), inset 0 0 15px var(--accent-glow);
+.pixel-box-cyan {
+  border: 3px solid var(--cyan);
+  box-shadow:
+    0 0 0 3px var(--bg),
+    0 0 0 6px var(--cyan);
 }
 
-.gradient-text {
-  background: linear-gradient(135deg, #22d3ee 0%, #a78bfa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.pixel-box-purple {
+  border: 3px solid var(--purple);
+  box-shadow:
+    0 0 0 3px var(--bg),
+    0 0 0 6px var(--purple);
 }
 
-.card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+.pixel-btn {
+  border: 3px solid var(--white);
+  box-shadow: 4px 4px 0 var(--gray);
+  transition: transform 0.1s, box-shadow 0.1s;
+  cursor: pointer;
 }
 
-.card:hover {
-  border-color: var(--border-glow);
+.pixel-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--gray);
+}
+
+.blink {
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+}
+
+.stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 60%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 10%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 80%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 40%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 20% 90%, white 0%, transparent 100%),
+    radial-gradient(2px 2px at 80% 20%, #f7c948 0%, transparent 100%),
+    radial-gradient(2px 2px at 40% 50%, #22d3ee 0%, transparent 100%);
 }

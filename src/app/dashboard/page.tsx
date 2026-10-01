@@ -5,12 +5,12 @@ import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
 const TASKS = [
-  { id: 'workout1', emoji: '💪', label: 'Entrená 45 min (sesión 1)' },
-  { id: 'workout2', emoji: '🏃', label: 'Entrená 45 min (sesión 2, afuera)' },
-  { id: 'water', emoji: '💧', label: 'Tomá 4 litros de agua' },
-  { id: 'diet', emoji: '🥗', label: 'Seguí la dieta (sin alcohol ni chatarra)' },
-  { id: 'read', emoji: '📖', label: 'Leé 10 páginas' },
-  { id: 'photo', emoji: '📸', label: 'Sacate la foto de progreso' },
+  { id: 'workout1', emoji: '💪', label: 'ENTRENAR 45MIN #1' },
+  { id: 'workout2', emoji: '🏃', label: 'ENTRENAR 45MIN #2' },
+  { id: 'water', emoji: '💧', label: '4 LITROS DE AGUA' },
+  { id: 'diet', emoji: '🥗', label: 'SEGUIR LA DIETA' },
+  { id: 'read', emoji: '📖', label: 'LEER 10 PAGINAS' },
+  { id: 'photo', emoji: '📸', label: 'FOTO DE PROGRESO' },
 ]
 
 type Profile = {
@@ -93,7 +93,7 @@ export default function Dashboard() {
 
   async function saveName() {
     if (!profile || !nameInput.trim()) return
-    const name = nameInput.trim()
+    const name = nameInput.trim().toUpperCase().slice(0, 10)
     await supabase.from('profiles').update({ display_name: name }).eq('id', profile.id)
     setProfile({ ...profile, display_name: name })
     setEditingName(false)
@@ -128,13 +128,14 @@ export default function Dashboard() {
     return checkins.filter(c => c.tasks.length === TASKS.length).length
   }
 
-  const myDisplayName = profile?.display_name || profile?.email.split('@')[0] || 'Vos'
-  const friendDisplayName = friendProfile?.display_name || friendProfile?.email.split('@')[0] || '?'
+  const myDisplayName = (profile?.display_name || profile?.email.split('@')[0] || 'P1').toUpperCase().slice(0, 10)
+  const friendDisplayName = (friendProfile?.display_name || friendProfile?.email.split('@')[0] || 'P2').toUpperCase().slice(0, 10)
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: 'var(--bg)' }}>
         <div className="text-4xl">🔥</div>
+        <div className="blink" style={{ fontFamily: 'var(--pixel)', color: 'var(--yellow)', fontSize: '10px' }}>LOADING...</div>
       </div>
     )
   }
@@ -142,46 +143,57 @@ export default function Dashboard() {
   const allTasksDone = myCheckin.length === TASKS.length
   const friendAllDone = friendCheckin.length === TASKS.length
   const isToday = selectedDay === currentDay
+  const pct = Math.round((currentDay / 75) * 100)
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-      {/* Background glow top */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-96 h-32 pointer-events-none opacity-20" style={{ background: 'radial-gradient(ellipse, #22d3ee 0%, transparent 70%)' }} />
+    <div className="min-h-screen pb-24 relative" style={{ background: 'var(--bg)', fontFamily: 'var(--pixel)' }}>
+      <div className="stars" />
+      <div className="scanlines" />
 
       {/* Header */}
-      <div className="sticky top-0 z-10 px-4 py-3 flex items-center justify-between" style={{ background: 'rgba(5,8,16,0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)' }}>
-        <div className="flex items-center gap-3">
-          <span className="text-xl">🔥</span>
+      <div className="sticky top-0 z-10 px-3 py-2" style={{ background: 'var(--bg)', borderBottom: '3px solid var(--yellow)' }}>
+        <div className="flex items-center justify-between">
           <div>
-            <div className="font-black text-sm tracking-wider gradient-text">RETO 75 DÍAS</div>
-            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Día {currentDay} de 75</div>
+            <div style={{ color: 'var(--yellow)', fontSize: '11px', textShadow: '2px 2px 0 #7a3a00' }}>🔥 RETO 75</div>
+            <div style={{ color: 'var(--cyan)', fontSize: '7px', marginTop: '2px' }}>DIA {currentDay}/75 — {pct}%</div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div style={{ color: 'var(--red)', fontSize: '12px' }}>
+              {Array.from({ length: Math.min(3, Math.floor(getCompletedCount(allMyCheckins) / 5) + 1) }).map((_, i) => (
+                <span key={i}>❤️</span>
+              ))}
+            </div>
+            <button onClick={signOut} className="pixel-btn px-2 py-1" style={{ background: 'var(--bg3)', color: 'var(--gray)', fontSize: '7px' }}>
+              EXIT
+            </button>
           </div>
         </div>
-        <button onClick={signOut} className="text-xs px-3 py-1.5 rounded-lg transition-colors" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
-          Salir
-        </button>
+        {/* XP bar */}
+        <div className="mt-2 h-2" style={{ background: 'var(--bg3)', border: '2px solid var(--gray)' }}>
+          <div className="h-full" style={{ width: `${pct}%`, background: 'var(--cyan)' }} />
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex px-4 pt-4 gap-2">
+      <div className="flex px-3 pt-3 gap-2">
         {(['hoy', 'progreso'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setView(tab)}
-            className="flex-1 py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all"
+            className="flex-1 py-2"
             style={view === tab
-              ? { background: 'linear-gradient(135deg, #22d3ee, #06b6d4)', color: '#050810', boxShadow: '0 0 15px var(--accent-glow)' }
-              : { background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
+              ? { background: 'var(--yellow)', color: '#0a0a1a', fontFamily: 'var(--pixel)', fontSize: '8px', border: '3px solid var(--white)', boxShadow: '3px 3px 0 #7a3a00' }
+              : { background: 'var(--bg2)', color: 'var(--gray)', fontFamily: 'var(--pixel)', fontSize: '8px', border: '3px solid var(--gray)' }}
           >
-            {tab === 'hoy' ? '📅 HOY' : '📊 PROGRESO'}
+            {tab === 'hoy' ? '▶ HOY' : '★ SCORE'}
           </button>
         ))}
       </div>
 
       {view === 'hoy' && (
-        <div className="px-4 mt-4 space-y-4">
+        <div className="px-3 mt-4 space-y-4 relative z-10">
           {/* Day selector */}
-          <div className="flex items-center justify-between px-2">
+          <div className="flex items-center justify-between">
             <button
               onClick={() => {
                 const newDay = Math.max(1, selectedDay - 1)
@@ -189,15 +201,13 @@ export default function Dashboard() {
                 setMyCheckin(getDayCheckin(allMyCheckins, newDay))
                 setFriendCheckin(getDayCheckin(allFriendCheckins, newDay))
               }}
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold transition-colors"
-              style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
               disabled={selectedDay <= 1}
-            >
-              ‹
-            </button>
+              className="pixel-btn w-10 h-10 flex items-center justify-center"
+              style={{ background: 'var(--bg2)', color: 'var(--white)', fontSize: '14px', border: '3px solid var(--gray)', boxShadow: '3px 3px 0 #000' }}
+            >◄</button>
             <div className="text-center">
-              <div className="text-xl font-black gradient-text">DÍA {selectedDay}</div>
-              {!isToday && <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>día pasado — solo lectura</div>}
+              <div style={{ color: 'var(--yellow)', fontSize: '12px', textShadow: '2px 2px 0 #7a3a00' }}>DIA {selectedDay}</div>
+              {!isToday && <div className="blink mt-1" style={{ color: 'var(--red)', fontSize: '7px' }}>READ ONLY</div>}
             </div>
             <button
               onClick={() => {
@@ -206,230 +216,212 @@ export default function Dashboard() {
                 setMyCheckin(getDayCheckin(allMyCheckins, newDay))
                 setFriendCheckin(getDayCheckin(allFriendCheckins, newDay))
               }}
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold transition-colors"
-              style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
               disabled={selectedDay >= currentDay}
-            >
-              ›
-            </button>
+              className="pixel-btn w-10 h-10 flex items-center justify-center"
+              style={{ background: 'var(--bg2)', color: 'var(--white)', fontSize: '14px', border: '3px solid var(--gray)', boxShadow: '3px 3px 0 #000' }}
+            >►</button>
           </div>
 
-          {/* My tasks */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-            <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black" style={{ background: 'linear-gradient(135deg, #22d3ee, #06b6d4)', color: '#050810', boxShadow: '0 0 10px var(--accent-glow)' }}>
-                  {myDisplayName[0].toUpperCase()}
+          {/* PLAYER 1 */}
+          <div style={{ border: '3px solid var(--cyan)', background: 'var(--bg2)', boxShadow: '4px 4px 0 #000' }}>
+            <div className="px-3 py-2 flex items-center justify-between" style={{ borderBottom: '3px solid var(--cyan)', background: '#001a1a' }}>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 flex items-center justify-center font-black" style={{ background: 'var(--cyan)', color: '#001a1a', fontSize: '9px' }}>
+                  {myDisplayName[0]}
                 </div>
                 {editingName ? (
                   <div className="flex items-center gap-2">
                     <input
                       value={nameInput}
-                      onChange={e => setNameInput(e.target.value)}
+                      onChange={e => setNameInput(e.target.value.toUpperCase().slice(0, 10))}
                       onKeyDown={e => e.key === 'Enter' && saveName()}
                       autoFocus
-                      className="text-sm font-bold rounded-lg px-2 py-1 w-28 focus:outline-none"
-                      style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)', border: '1px solid var(--accent)' }}
+                      className="px-2 py-1 focus:outline-none w-24"
+                      style={{ background: 'var(--bg)', border: '2px solid var(--cyan)', color: 'var(--cyan)', fontFamily: 'var(--pixel)', fontSize: '8px' }}
                     />
-                    <button onClick={saveName} className="text-xs px-2 py-1 rounded-lg font-bold" style={{ background: 'var(--accent)', color: '#050810' }}>✓</button>
-                    <button onClick={() => setEditingName(false)} className="text-xs" style={{ color: 'var(--text-muted)' }}>✕</button>
+                    <button onClick={saveName} style={{ color: 'var(--green)', fontFamily: 'var(--pixel)', fontSize: '8px' }}>OK</button>
                   </div>
                 ) : (
-                  <button onClick={() => setEditingName(true)} className="flex items-center gap-1.5 group">
-                    <span className="font-bold text-sm">{myDisplayName}</span>
-                    <span className="text-xs opacity-0 group-hover:opacity-60 transition-opacity">✏️</span>
+                  <button onClick={() => setEditingName(true)}>
+                    <span style={{ color: 'var(--cyan)', fontSize: '9px' }}>P1: {myDisplayName}</span>
+                    <span style={{ color: 'var(--gray)', fontSize: '7px', marginLeft: '4px' }}>✏</span>
                   </button>
                 )}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-black" style={{ color: allTasksDone ? 'var(--green)' : 'var(--text-muted)' }}>
-                  {myCheckin.length}/{TASKS.length}
-                </span>
-                {allTasksDone && <span>🎉</span>}
-              </div>
+              <span style={{ color: allTasksDone ? 'var(--green)' : 'var(--yellow)', fontSize: '9px' }}>
+                {allTasksDone ? '★ PERFECT!' : `${myCheckin.length}/${TASKS.length}`}
+              </span>
             </div>
-            <div>
-              {TASKS.map((task, i) => {
-                const done = myCheckin.includes(task.id)
-                return (
-                  <button
-                    key={task.id}
-                    onClick={() => isToday && toggleTask(task.id)}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-all"
-                    style={{
-                      background: done ? 'rgba(16,217,138,0.06)' : 'transparent',
-                      cursor: isToday ? 'pointer' : 'default',
-                      borderTop: i > 0 ? '1px solid var(--border)' : 'none',
-                    }}
-                  >
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
-                         style={{
-                           border: done ? 'none' : '2px solid var(--border)',
-                           background: done ? 'linear-gradient(135deg, #10d98a, #06b6d4)' : 'transparent',
-                           boxShadow: done ? '0 0 8px var(--green-glow)' : 'none',
-                         }}>
-                      {done && <span className="text-white font-black" style={{ fontSize: '10px' }}>✓</span>}
-                    </div>
-                    <span className="text-sm" style={{ color: done ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                      {task.emoji} {task.label}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
+            {TASKS.map((task, i) => {
+              const done = myCheckin.includes(task.id)
+              return (
+                <button
+                  key={task.id}
+                  onClick={() => isToday && toggleTask(task.id)}
+                  className="w-full flex items-center gap-3 px-3 py-3"
+                  style={{
+                    background: done ? '#001a00' : 'transparent',
+                    borderTop: i > 0 ? '2px solid #1a1a3a' : 'none',
+                    cursor: isToday ? 'pointer' : 'default',
+                  }}
+                >
+                  <div className="w-5 h-5 flex items-center justify-center flex-shrink-0"
+                       style={{ border: `2px solid ${done ? 'var(--green)' : 'var(--gray)'}`, background: done ? 'var(--green)' : 'transparent' }}>
+                    {done && <span style={{ color: '#001a00', fontSize: '8px', fontWeight: 'bold' }}>✓</span>}
+                  </div>
+                  <span style={{ color: done ? 'var(--green)' : 'var(--gray)', fontSize: '8px', textAlign: 'left' }}>
+                    {task.emoji} {task.label}
+                  </span>
+                </button>
+              )
+            })}
           </div>
 
-          {/* Friend tasks */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-            <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black" style={{ background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white', boxShadow: '0 0 10px var(--purple-glow)' }}>
-                  {friendProfile ? friendDisplayName[0].toUpperCase() : '?'}
+          {/* PLAYER 2 */}
+          <div style={{ border: '3px solid var(--purple)', background: 'var(--bg2)', boxShadow: '4px 4px 0 #000' }}>
+            <div className="px-3 py-2 flex items-center justify-between" style={{ borderBottom: '3px solid var(--purple)', background: '#0f001a' }}>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 flex items-center justify-center font-black" style={{ background: 'var(--purple)', color: '#0f001a', fontSize: '9px' }}>
+                  {friendProfile ? friendDisplayName[0] : '?'}
                 </div>
                 <div>
-                  <span className="font-bold text-sm">{friendProfile ? friendDisplayName : (profile?.friend_email?.split('@')[0] || 'Tu amiga')}</span>
+                  <span style={{ color: 'var(--purple)', fontSize: '9px' }}>P2: {friendProfile ? friendDisplayName : 'AMIGA'}</span>
                   {!friendProfile && (
-                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
-                      {profile?.friend_email ? 'esperando...' : 'no vinculada'}
+                    <span className="blink ml-2" style={{ color: 'var(--gray)', fontSize: '7px' }}>
+                      {profile?.friend_email ? 'OFFLINE' : '???'}
                     </span>
                   )}
                 </div>
               </div>
               {friendProfile && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-black" style={{ color: friendAllDone ? 'var(--green)' : 'var(--text-muted)' }}>
-                    {friendCheckin.length}/{TASKS.length}
-                  </span>
-                  {friendAllDone && <span>🎉</span>}
-                </div>
+                <span style={{ color: friendAllDone ? 'var(--green)' : 'var(--yellow)', fontSize: '9px' }}>
+                  {friendAllDone ? '★ PERFECT!' : `${friendCheckin.length}/${TASKS.length}`}
+                </span>
               )}
             </div>
-            <div>
-              {TASKS.map((task, i) => {
-                const done = friendProfile ? friendCheckin.includes(task.id) : false
-                return (
-                  <div key={task.id} className="flex items-center gap-3 px-4 py-3.5 transition-all"
-                       style={{
-                         background: done ? 'rgba(16,217,138,0.06)' : 'transparent',
-                         borderTop: i > 0 ? '1px solid var(--border)' : 'none',
-                         opacity: !friendProfile ? 0.35 : 1,
-                       }}>
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                         style={{
-                           border: done ? 'none' : '2px solid var(--border)',
-                           background: done ? 'linear-gradient(135deg, #10d98a, #7c3aed)' : 'transparent',
-                           boxShadow: done ? '0 0 8px var(--green-glow)' : 'none',
-                         }}>
-                      {done && <span className="text-white font-black" style={{ fontSize: '10px' }}>✓</span>}
-                    </div>
-                    <span className="text-sm" style={{ color: done ? 'var(--text-primary)' : 'var(--text-muted)' }}>
-                      {task.emoji} {task.label}
-                    </span>
+            {TASKS.map((task, i) => {
+              const done = friendProfile ? friendCheckin.includes(task.id) : false
+              return (
+                <div key={task.id} className="flex items-center gap-3 px-3 py-3"
+                     style={{
+                       background: done ? '#0f001a' : 'transparent',
+                       borderTop: i > 0 ? '2px solid #1a1a3a' : 'none',
+                       opacity: !friendProfile ? 0.3 : 1,
+                     }}>
+                  <div className="w-5 h-5 flex items-center justify-center flex-shrink-0"
+                       style={{ border: `2px solid ${done ? 'var(--purple)' : 'var(--gray)'}`, background: done ? 'var(--purple)' : 'transparent' }}>
+                    {done && <span style={{ color: 'white', fontSize: '8px', fontWeight: 'bold' }}>✓</span>}
                   </div>
-                )
-              })}
-            </div>
-            {!friendProfile && !profile?.friend_email && (
-              <div className="px-4 py-3 text-xs text-center" style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)' }}>
-                Registrate con el email de tu amiga para vincularla
-              </div>
-            )}
+                  <span style={{ color: done ? 'var(--purple)' : 'var(--gray)', fontSize: '8px' }}>
+                    {task.emoji} {task.label}
+                  </span>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
 
       {view === 'progreso' && (
-        <div className="px-4 mt-4 space-y-4">
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-2xl p-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-              <div className="text-3xl font-black gradient-text">{getCompletedCount(allMyCheckins)}</div>
-              <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Días perfectos</div>
-              <div className="text-xs font-bold mt-0.5" style={{ color: 'var(--accent)' }}>{myDisplayName}</div>
+        <div className="px-3 mt-4 space-y-4 relative z-10">
+          {/* Score board */}
+          <div style={{ border: '3px solid var(--yellow)', background: 'var(--bg2)', boxShadow: '4px 4px 0 #000' }}>
+            <div className="px-3 py-2 text-center" style={{ borderBottom: '3px solid var(--yellow)', background: '#1a1000' }}>
+              <span style={{ color: 'var(--yellow)', fontSize: '9px' }}>★ HIGH SCORES ★</span>
             </div>
-            <div className="rounded-2xl p-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-              <div className="text-3xl font-black" style={{ color: '#a78bfa' }}>{getCompletedCount(allFriendCheckins)}</div>
-              <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Días perfectos</div>
-              <div className="text-xs font-bold mt-0.5" style={{ color: '#7c3aed' }}>{friendProfile ? friendDisplayName : 'Tu amiga'}</div>
+            <div className="px-3 py-3 space-y-3">
+              <div className="flex justify-between items-center">
+                <span style={{ color: 'var(--cyan)', fontSize: '8px' }}>P1 {myDisplayName}</span>
+                <span style={{ color: 'var(--yellow)', fontSize: '12px', textShadow: '2px 2px 0 #7a3a00' }}>{String(getCompletedCount(allMyCheckins)).padStart(3, '0')}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span style={{ color: 'var(--purple)', fontSize: '8px' }}>P2 {friendProfile ? friendDisplayName : 'AMIGA'}</span>
+                <span style={{ color: 'var(--yellow)', fontSize: '12px', textShadow: '2px 2px 0 #7a3a00' }}>{String(getCompletedCount(allFriendCheckins)).padStart(3, '0')}</span>
+              </div>
+              <div style={{ borderTop: '2px solid var(--gray)', paddingTop: '8px' }}>
+                <div className="flex justify-between" style={{ color: 'var(--gray)', fontSize: '7px' }}>
+                  <span>PROGRESO</span>
+                  <span>{currentDay}/75</span>
+                </div>
+                <div className="mt-1 h-3" style={{ background: 'var(--bg3)', border: '2px solid var(--gray)' }}>
+                  <div className="h-full" style={{ width: `${pct}%`, background: 'var(--cyan)', boxShadow: '0 0 6px var(--cyan)' }} />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Progress bar */}
-          <div className="rounded-2xl p-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-            <div className="flex justify-between text-xs mb-2">
-              <span style={{ color: 'var(--text-muted)' }}>Progreso del reto</span>
-              <span className="font-bold" style={{ color: 'var(--accent)' }}>{currentDay}/75</span>
+          {/* Map/Calendar */}
+          <div style={{ border: '3px solid var(--gray)', background: 'var(--bg2)', boxShadow: '4px 4px 0 #000' }}>
+            <div className="px-3 py-2" style={{ borderBottom: '3px solid var(--gray)', background: 'var(--bg3)' }}>
+              <span style={{ color: 'var(--gray)', fontSize: '8px' }}>★ MAP — 75 NIVELES</span>
             </div>
-            <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
-              <div className="h-full rounded-full transition-all" style={{ width: `${(currentDay / 75) * 100}%`, background: 'linear-gradient(90deg, #22d3ee, #7c3aed)', boxShadow: '0 0 8px var(--accent-glow)' }} />
+            <div className="p-3">
+              <div className="grid gap-1" style={{ gridTemplateColumns: 'repeat(15, 1fr)' }}>
+                {Array.from({ length: 75 }, (_, i) => {
+                  const day = i + 1
+                  const myDone = getDayCheckin(allMyCheckins, day).length === TASKS.length
+                  const friendDone = friendProfile ? getDayCheckin(allFriendCheckins, day).length === TASKS.length : false
+                  const myPartial = !myDone && getDayCheckin(allMyCheckins, day).length > 0
+                  const isCurrentDay = day === currentDay
+                  const isFuture = day > currentDay
+
+                  let bg = '#1a1a3a'
+                  let color = '#4a4a7a'
+                  if (myDone && friendDone) { bg = '#00ff88'; color = '#000' }
+                  else if (myDone) { bg = '#22d3ee'; color = '#000' }
+                  else if (friendDone) { bg = '#a855f7'; color = '#fff' }
+                  else if (myPartial) { bg = '#004455' }
+                  else if (isFuture) { bg = '#0f0f2a' }
+
+                  return (
+                    <div key={day} className="aspect-square flex items-center justify-center"
+                         style={{
+                           background: bg,
+                           color,
+                           fontSize: '6px',
+                           fontFamily: 'var(--pixel)',
+                           outline: isCurrentDay ? '2px solid var(--yellow)' : 'none',
+                           outlineOffset: '1px',
+                           boxShadow: isCurrentDay ? '0 0 4px var(--yellow)' : 'none',
+                         }}>
+                      {day}
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="flex flex-wrap gap-3 mt-3" style={{ fontSize: '7px', color: 'var(--gray)' }}>
+                <span>■ <span style={{ color: 'var(--cyan)' }}>P1</span></span>
+                <span>■ <span style={{ color: 'var(--purple)' }}>P2</span></span>
+                <span>■ <span style={{ color: '#00ff88' }}>AMBAS</span></span>
+              </div>
             </div>
           </div>
 
-          {/* Calendar grid */}
-          <div className="rounded-2xl p-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-            <div className="text-xs font-black tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>CALENDARIO 75 DÍAS</div>
-            <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(15, 1fr)' }}>
-              {Array.from({ length: 75 }, (_, i) => {
-                const day = i + 1
-                const myDone = getDayCheckin(allMyCheckins, day).length === TASKS.length
-                const friendDone = friendProfile ? getDayCheckin(allFriendCheckins, day).length === TASKS.length : false
-                const myPartial = !myDone && getDayCheckin(allMyCheckins, day).length > 0
-                const isCurrentDay = day === currentDay
-                const isFuture = day > currentDay
-
-                let bg = 'var(--bg-tertiary)'
-                if (myDone && friendDone) bg = 'linear-gradient(135deg, #10d98a, #06b6d4)'
-                else if (myDone) bg = 'linear-gradient(135deg, #22d3ee, #06b6d4)'
-                else if (friendDone) bg = 'linear-gradient(135deg, #7c3aed, #a78bfa)'
-                else if (myPartial) bg = 'rgba(34,211,238,0.2)'
-                else if (isFuture) bg = 'var(--bg-hover)'
-
+          {/* Task stats */}
+          <div style={{ border: '3px solid var(--gray)', background: 'var(--bg2)', boxShadow: '4px 4px 0 #000' }}>
+            <div className="px-3 py-2" style={{ borderBottom: '3px solid var(--gray)', background: 'var(--bg3)' }}>
+              <span style={{ color: 'var(--gray)', fontSize: '8px' }}>★ STATS</span>
+            </div>
+            <div className="p-3 space-y-3">
+              {TASKS.map(task => {
+                const myCount = allMyCheckins.filter(c => c.tasks.includes(task.id)).length
+                const friendCount = allFriendCheckins.filter(c => c.tasks.includes(task.id)).length
                 return (
-                  <div
-                    key={day}
-                    className="rounded aspect-square flex items-center justify-center font-bold"
-                    style={{
-                      background: bg,
-                      color: (myDone || friendDone) ? 'white' : 'var(--text-muted)',
-                      outline: isCurrentDay ? '2px solid var(--accent)' : 'none',
-                      outlineOffset: '1px',
-                      fontSize: '8px',
-                      boxShadow: isCurrentDay ? '0 0 6px var(--accent-glow)' : 'none',
-                    }}
-                  >
-                    {day}
+                  <div key={task.id}>
+                    <div className="flex justify-between mb-1">
+                      <span style={{ color: 'var(--gray)', fontSize: '7px' }}>{task.emoji} {task.label}</span>
+                      <span style={{ color: 'var(--cyan)', fontSize: '7px' }}>{myCount}D</span>
+                    </div>
+                    <div className="h-2 mb-0.5" style={{ background: 'var(--bg3)', border: '1px solid var(--gray)' }}>
+                      <div className="h-full" style={{ width: `${(myCount / 75) * 100}%`, background: 'var(--cyan)' }} />
+                    </div>
+                    <div className="h-1.5" style={{ background: 'var(--bg3)', border: '1px solid var(--gray)' }}>
+                      <div className="h-full" style={{ width: `${(friendCount / 75) * 100}%`, background: 'var(--purple)' }} />
+                    </div>
                   </div>
                 )
               })}
             </div>
-            <div className="flex flex-wrap gap-3 mt-3" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-              <span><span style={{ color: 'var(--accent)' }}>■</span> {myDisplayName}</span>
-              <span><span style={{ color: '#7c3aed' }}>■</span> {friendProfile ? friendDisplayName : 'Tu amiga'}</span>
-              <span><span style={{ color: 'var(--green)' }}>■</span> Ambas</span>
-            </div>
-          </div>
-
-          {/* Task breakdown */}
-          <div className="rounded-2xl p-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-            <div className="text-xs font-black tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>TAREAS COMPLETADAS</div>
-            {TASKS.map(task => {
-              const myCount = allMyCheckins.filter(c => c.tasks.includes(task.id)).length
-              const friendCount = allFriendCheckins.filter(c => c.tasks.includes(task.id)).length
-              return (
-                <div key={task.id} className="mb-4">
-                  <div className="flex justify-between text-xs mb-1.5">
-                    <span style={{ color: 'var(--text-secondary)' }}>{task.emoji} {task.label}</span>
-                    <span className="font-bold" style={{ color: 'var(--accent)' }}>{myCount}d</span>
-                  </div>
-                  <div className="h-1.5 rounded-full overflow-hidden mb-0.5" style={{ background: 'var(--bg-tertiary)' }}>
-                    <div className="h-full rounded-full" style={{ width: `${(myCount / 75) * 100}%`, background: 'linear-gradient(90deg, #22d3ee, #06b6d4)', boxShadow: '0 0 4px var(--accent-glow)' }} />
-                  </div>
-                  <div className="h-1 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
-                    <div className="h-full rounded-full" style={{ width: `${(friendCount / 75) * 100}%`, background: 'linear-gradient(90deg, #7c3aed, #a78bfa)' }} />
-                  </div>
-                </div>
-              )
-            })}
           </div>
         </div>
       )}

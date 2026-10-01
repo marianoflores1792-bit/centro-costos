@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
@@ -44,6 +44,13 @@ export default function Dashboard() {
   const router = useRouter()
   const supabase = createClient()
 
+  // Refs para acceder a valores actuales dentro de callbacks
+  const selectedDayRef = useRef(1)
+  const myIdRef = useRef<string | null>(null)
+  const friendIdRef = useRef<string | null>(null)
+
+  useEffect(() => { selectedDayRef.current = selectedDay }, [selectedDay])
+
   const getDayCheckin = (checkins: CheckIn[], day: number) =>
     checkins.find(c => c.day === day)?.tasks || []
 
@@ -64,6 +71,8 @@ export default function Dashboard() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
 
+      myIdRef.current = user.id
+
       let { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (!prof) {
         prof = { id: user.id, email: user.email || '', friend_email: null, start_date: new Date().toISOString().split('T')[0], display_name: null }
@@ -78,49 +87,55 @@ export default function Dashboard() {
       const day = Math.min(Math.max(diff, 1), 75)
       setCurrentDay(day)
       setSelectedDay(day)
+      selectedDayRef.current = day
 
+      // Buscar amiga: por friend_email propio O porque la amiga tiene mi email
       let friendId: string | null = null
+      let fp: Profile | null = null
+
       if (prof.friend_email) {
-        const { data: fp } = await supabase.from('profiles').select('*').eq('email', prof.friend_email).single()
-        if (fp) { setFriendProfile(fp); friendId = fp.id }
+        const { data } = await supabase.from('profiles').select('*').eq('email', prof.friend_email).single()
+        fp = data
+      }
+
+      if (!fp) {
+        // La amiga me agregó a mí aunque yo no la agregué
+        const { data } = await supabase.from('profiles').select('*').eq('friend_email', prof.email).single()
+        fp = data
+      }
+
+      if (fp) {
+        setFriendProfile(fp)
+        friendId = fp.id
+        friendIdRef.current = fp.id
       }
 
       await loadData(user.id, friendId, day)
       setLoading(false)
-
-      // Suscripción real-time
-      const channel = supabase
-        .channel('checkins-realtime')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'checkins' }, (payload) => {
-          const row = payload.new as CheckIn
-          if (!row) return
-
-          if (row.user_id === user.id) {
-            setAllMyCheckins(prev => {
-              const without = prev.filter(c => c.day !== row.day)
-              return [...without, row]
-            })
-            setSelectedDay(prev => {
-              if (prev === row.day) setMyCheckin(row.tasks)
-              return prev
-            })
-          } else if (friendId && row.user_id === friendId) {
-            setAllFriendCheckins(prev => {
-              const without = prev.filter(c => c.day !== row.day)
-              return [...without, row]
-            })
-            setSelectedDay(prev => {
-              if (prev === row.day) setFriendCheckin(row.tasks)
-              return prev
-            })
-          }
-        })
-        .subscribe()
-
-      return () => { supabase.removeChannel(channel) }
     }
     init()
   }, [supabase, router, loadData])
+
+  // Suscripción real-time separada
+  useEffect(() => {
+    const channel = supabase
+      .channel('checkins-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'checkins' }, (payload) => {
+        const row = payload.new as CheckIn
+        if (!row) return
+
+        if (row.user_id === myIdRef.current) {
+          setAllMyCheckins(prev => [...prev.filter(c => c.day !== row.day), row])
+          if (row.day === selectedDayRef.current) setMyCheckin(row.tasks)
+        } else if (row.user_id === friendIdRef.current) {
+          setAllFriendCheckins(prev => [...prev.filter(c => c.day !== row.day), row])
+          if (row.day === selectedDayRef.current) setFriendCheckin(row.tasks)
+        }
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [supabase])
 
   async function saveName() {
     if (!profile || !nameInput.trim()) return
@@ -144,10 +159,7 @@ export default function Dashboard() {
       updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id,day' })
 
-    setAllMyCheckins(prev => {
-      const without = prev.filter(c => c.day !== selectedDay)
-      return [...without, { user_id: profile.id, day: selectedDay, tasks: updated, updated_at: new Date().toISOString() }]
-    })
+    setAllMyCheckins(prev => [...prev.filter(c => c.day !== selectedDay), { user_id: profile.id, day: selectedDay, tasks: updated, updated_at: new Date().toISOString() }])
   }
 
   async function signOut() {
@@ -199,7 +211,6 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
-        {/* XP bar */}
         <div className="mt-2 h-2" style={{ background: 'var(--bg3)', border: '2px solid var(--gray)' }}>
           <div className="h-full" style={{ width: `${pct}%`, background: 'var(--cyan)' }} />
         </div>
@@ -229,6 +240,7 @@ export default function Dashboard() {
               onClick={() => {
                 const newDay = Math.max(1, selectedDay - 1)
                 setSelectedDay(newDay)
+                selectedDayRef.current = newDay
                 setMyCheckin(getDayCheckin(allMyCheckins, newDay))
                 setFriendCheckin(getDayCheckin(allFriendCheckins, newDay))
               }}
@@ -244,6 +256,7 @@ export default function Dashboard() {
               onClick={() => {
                 const newDay = Math.min(currentDay, selectedDay + 1)
                 setSelectedDay(newDay)
+                selectedDayRef.current = newDay
                 setMyCheckin(getDayCheckin(allMyCheckins, newDay))
                 setFriendCheckin(getDayCheckin(allFriendCheckins, newDay))
               }}
@@ -253,7 +266,7 @@ export default function Dashboard() {
             >►</button>
           </div>
 
-          {/* PLAYER 1 */}
+          {/* PLAYER 1 — Vos */}
           <div style={{ border: '3px solid var(--cyan)', background: 'var(--bg2)', boxShadow: '4px 4px 0 #000' }}>
             <div className="px-3 py-2 flex items-center justify-between" style={{ borderBottom: '3px solid var(--cyan)', background: '#001a1a' }}>
               <div className="flex items-center gap-2">
@@ -283,32 +296,34 @@ export default function Dashboard() {
                 {allTasksDone ? '★ PERFECT!' : `${myCheckin.length}/${TASKS.length}`}
               </span>
             </div>
-            {TASKS.map((task, i) => {
-              const done = myCheckin.includes(task.id)
-              return (
-                <button
-                  key={task.id}
-                  onClick={() => isToday && toggleTask(task.id)}
-                  className="w-full flex items-center gap-3 px-3 py-3"
-                  style={{
-                    background: done ? '#001a00' : 'transparent',
-                    borderTop: i > 0 ? '2px solid #1a1a3a' : 'none',
-                    cursor: isToday ? 'pointer' : 'default',
-                  }}
-                >
-                  <div className="w-5 h-5 flex items-center justify-center flex-shrink-0"
-                       style={{ border: `2px solid ${done ? 'var(--green)' : 'var(--gray)'}`, background: done ? 'var(--green)' : 'transparent' }}>
-                    {done && <span style={{ color: '#001a00', fontSize: '8px', fontWeight: 'bold' }}>✓</span>}
-                  </div>
-                  <span style={{ color: done ? 'var(--green)' : 'var(--gray)', fontSize: '8px', textAlign: 'left' }}>
-                    {task.emoji} {task.label}
-                  </span>
-                </button>
-              )
-            })}
+            <div>
+              {TASKS.map((task, i) => {
+                const done = myCheckin.includes(task.id)
+                return (
+                  <button
+                    key={task.id}
+                    onClick={() => isToday && toggleTask(task.id)}
+                    className="w-full flex items-center gap-3 px-3 py-3"
+                    style={{
+                      background: done ? '#001a00' : 'transparent',
+                      borderTop: i > 0 ? '2px solid #1a1a3a' : 'none',
+                      cursor: isToday ? 'pointer' : 'default',
+                    }}
+                  >
+                    <div className="w-5 h-5 flex items-center justify-center flex-shrink-0"
+                         style={{ border: `2px solid ${done ? 'var(--green)' : 'var(--gray)'}`, background: done ? 'var(--green)' : 'transparent' }}>
+                      {done && <span style={{ color: '#001a00', fontSize: '8px', fontWeight: 'bold' }}>✓</span>}
+                    </div>
+                    <span style={{ color: done ? 'var(--green)' : 'var(--gray)', fontSize: '8px', textAlign: 'left' }}>
+                      {task.emoji} {task.label}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
-          {/* PLAYER 2 */}
+          {/* PLAYER 2 — Amiga */}
           <div style={{ border: '3px solid var(--purple)', background: 'var(--bg2)', boxShadow: '4px 4px 0 #000' }}>
             <div className="px-3 py-2 flex items-center justify-between" style={{ borderBottom: '3px solid var(--purple)', background: '#0f001a' }}>
               <div className="flex items-center gap-2">
@@ -316,7 +331,9 @@ export default function Dashboard() {
                   {friendProfile ? friendDisplayName[0] : '?'}
                 </div>
                 <div>
-                  <span style={{ color: 'var(--purple)', fontSize: '9px' }}>P2: {friendProfile ? friendDisplayName : 'AMIGA'}</span>
+                  <span style={{ color: 'var(--purple)', fontSize: '9px' }}>
+                    P2: {friendProfile ? friendDisplayName : 'AMIGA'}
+                  </span>
                   {!friendProfile && (
                     <span className="blink ml-2" style={{ color: 'var(--gray)', fontSize: '7px' }}>
                       {profile?.friend_email ? 'OFFLINE' : '???'}
@@ -330,32 +347,33 @@ export default function Dashboard() {
                 </span>
               )}
             </div>
-            {TASKS.map((task, i) => {
-              const done = friendProfile ? friendCheckin.includes(task.id) : false
-              return (
-                <div key={task.id} className="flex items-center gap-3 px-3 py-3"
-                     style={{
-                       background: done ? '#0f001a' : 'transparent',
-                       borderTop: i > 0 ? '2px solid #1a1a3a' : 'none',
-                       opacity: !friendProfile ? 0.3 : 1,
-                     }}>
-                  <div className="w-5 h-5 flex items-center justify-center flex-shrink-0"
-                       style={{ border: `2px solid ${done ? 'var(--purple)' : 'var(--gray)'}`, background: done ? 'var(--purple)' : 'transparent' }}>
-                    {done && <span style={{ color: 'white', fontSize: '8px', fontWeight: 'bold' }}>✓</span>}
+            <div>
+              {TASKS.map((task, i) => {
+                const done = friendProfile ? friendCheckin.includes(task.id) : false
+                return (
+                  <div key={task.id} className="flex items-center gap-3 px-3 py-3"
+                       style={{
+                         background: done ? '#0f001a' : 'transparent',
+                         borderTop: i > 0 ? '2px solid #1a1a3a' : 'none',
+                         opacity: !friendProfile ? 0.3 : 1,
+                       }}>
+                    <div className="w-5 h-5 flex items-center justify-center flex-shrink-0"
+                         style={{ border: `2px solid ${done ? 'var(--purple)' : 'var(--gray)'}`, background: done ? 'var(--purple)' : 'transparent' }}>
+                      {done && <span style={{ color: 'white', fontSize: '8px', fontWeight: 'bold' }}>✓</span>}
+                    </div>
+                    <span style={{ color: done ? 'var(--purple)' : 'var(--gray)', fontSize: '8px' }}>
+                      {task.emoji} {task.label}
+                    </span>
                   </div>
-                  <span style={{ color: done ? 'var(--purple)' : 'var(--gray)', fontSize: '8px' }}>
-                    {task.emoji} {task.label}
-                  </span>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
         </div>
       )}
 
       {view === 'progreso' && (
         <div className="px-3 mt-4 space-y-4 relative z-10">
-          {/* Score board */}
           <div style={{ border: '3px solid var(--yellow)', background: 'var(--bg2)', boxShadow: '4px 4px 0 #000' }}>
             <div className="px-3 py-2 text-center" style={{ borderBottom: '3px solid var(--yellow)', background: '#1a1000' }}>
               <span style={{ color: 'var(--yellow)', fontSize: '9px' }}>★ HIGH SCORES ★</span>
@@ -381,7 +399,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Map/Calendar */}
           <div style={{ border: '3px solid var(--gray)', background: 'var(--bg2)', boxShadow: '4px 4px 0 #000' }}>
             <div className="px-3 py-2" style={{ borderBottom: '3px solid var(--gray)', background: 'var(--bg3)' }}>
               <span style={{ color: 'var(--gray)', fontSize: '8px' }}>★ MAP — 75 NIVELES</span>
@@ -407,10 +424,7 @@ export default function Dashboard() {
                   return (
                     <div key={day} className="aspect-square flex items-center justify-center"
                          style={{
-                           background: bg,
-                           color,
-                           fontSize: '6px',
-                           fontFamily: 'var(--pixel)',
+                           background: bg, color, fontSize: '6px', fontFamily: 'var(--pixel)',
                            outline: isCurrentDay ? '2px solid var(--yellow)' : 'none',
                            outlineOffset: '1px',
                            boxShadow: isCurrentDay ? '0 0 4px var(--yellow)' : 'none',
@@ -428,7 +442,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Task stats */}
           <div style={{ border: '3px solid var(--gray)', background: 'var(--bg2)', boxShadow: '4px 4px 0 #000' }}>
             <div className="px-3 py-2" style={{ borderBottom: '3px solid var(--gray)', background: 'var(--bg3)' }}>
               <span style={{ color: 'var(--gray)', fontSize: '8px' }}>★ STATS</span>

@@ -144,17 +144,20 @@ export default function Dashboard() {
   const isToday = selectedDay === currentDay
 
   return (
-    <div className="min-h-screen pb-20" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+    <div className="min-h-screen pb-24" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+      {/* Background glow top */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-96 h-32 pointer-events-none opacity-20" style={{ background: 'radial-gradient(ellipse, #22d3ee 0%, transparent 70%)' }} />
+
       {/* Header */}
-      <div className="sticky top-0 z-10 px-4 py-3 flex items-center justify-between" style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}>
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-lg">🔥</span>
-            <span className="font-bold">Reto 75 Días</span>
+      <div className="sticky top-0 z-10 px-4 py-3 flex items-center justify-between" style={{ background: 'rgba(5,8,16,0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)' }}>
+        <div className="flex items-center gap-3">
+          <span className="text-xl">🔥</span>
+          <div>
+            <div className="font-black text-sm tracking-wider gradient-text">RETO 75 DÍAS</div>
+            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Día {currentDay} de 75</div>
           </div>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Día {currentDay} de 75</p>
         </div>
-        <button onClick={signOut} className="text-xs px-3 py-1.5 rounded-lg" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
+        <button onClick={signOut} className="text-xs px-3 py-1.5 rounded-lg transition-colors" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
           Salir
         </button>
       </div>
@@ -165,12 +168,12 @@ export default function Dashboard() {
           <button
             key={tab}
             onClick={() => setView(tab)}
-            className="flex-1 py-2 rounded-xl text-sm font-medium capitalize transition-all"
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all"
             style={view === tab
-              ? { background: 'var(--accent)', color: '#0d1117' }
-              : { background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}
+              ? { background: 'linear-gradient(135deg, #22d3ee, #06b6d4)', color: '#050810', boxShadow: '0 0 15px var(--accent-glow)' }
+              : { background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
           >
-            {tab === 'hoy' ? '📅 Hoy' : '📊 Progreso'}
+            {tab === 'hoy' ? '📅 HOY' : '📊 PROGRESO'}
           </button>
         ))}
       </div>
@@ -178,7 +181,7 @@ export default function Dashboard() {
       {view === 'hoy' && (
         <div className="px-4 mt-4 space-y-4">
           {/* Day selector */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between px-2">
             <button
               onClick={() => {
                 const newDay = Math.max(1, selectedDay - 1)
@@ -186,15 +189,15 @@ export default function Dashboard() {
                 setMyCheckin(getDayCheckin(allMyCheckins, newDay))
                 setFriendCheckin(getDayCheckin(allFriendCheckins, newDay))
               }}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-              style={{ background: 'var(--bg-tertiary)' }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold transition-colors"
+              style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
               disabled={selectedDay <= 1}
             >
               ‹
             </button>
             <div className="text-center">
-              <div className="font-bold">Día {selectedDay}</div>
-              {!isToday && <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Día pasado</div>}
+              <div className="text-xl font-black gradient-text">DÍA {selectedDay}</div>
+              {!isToday && <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>día pasado — solo lectura</div>}
             </div>
             <button
               onClick={() => {
@@ -203,8 +206,8 @@ export default function Dashboard() {
                 setMyCheckin(getDayCheckin(allMyCheckins, newDay))
                 setFriendCheckin(getDayCheckin(allFriendCheckins, newDay))
               }}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-              style={{ background: 'var(--bg-tertiary)' }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold transition-colors"
+              style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
               disabled={selectedDay >= currentDay}
             >
               ›
@@ -212,10 +215,10 @@ export default function Dashboard() {
           </div>
 
           {/* My tasks */}
-          <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
-            <div className="px-4 py-3 flex items-center justify-between" style={{ background: 'var(--bg-secondary)' }}>
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: 'var(--accent)', color: '#0d1117' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+            <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black" style={{ background: 'linear-gradient(135deg, #22d3ee, #06b6d4)', color: '#050810', boxShadow: '0 0 10px var(--accent-glow)' }}>
                   {myDisplayName[0].toUpperCase()}
                 </div>
                 {editingName ? (
@@ -225,25 +228,25 @@ export default function Dashboard() {
                       onChange={e => setNameInput(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && saveName()}
                       autoFocus
-                      className="text-sm font-semibold rounded px-2 py-0.5 w-32 focus:outline-none"
+                      className="text-sm font-bold rounded-lg px-2 py-1 w-28 focus:outline-none"
                       style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)', border: '1px solid var(--accent)' }}
                     />
-                    <button onClick={saveName} className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--accent)', color: '#0d1117' }}>✓</button>
+                    <button onClick={saveName} className="text-xs px-2 py-1 rounded-lg font-bold" style={{ background: 'var(--accent)', color: '#050810' }}>✓</button>
                     <button onClick={() => setEditingName(false)} className="text-xs" style={{ color: 'var(--text-muted)' }}>✕</button>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => setEditingName(true)}
-                    className="flex items-center gap-1 group"
-                  >
-                    <span className="font-semibold text-sm">{myDisplayName}</span>
-                    <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--text-muted)' }}>✏️</span>
+                  <button onClick={() => setEditingName(true)} className="flex items-center gap-1.5 group">
+                    <span className="font-bold text-sm">{myDisplayName}</span>
+                    <span className="text-xs opacity-0 group-hover:opacity-60 transition-opacity">✏️</span>
                   </button>
                 )}
               </div>
-              <span className="text-sm font-bold" style={{ color: allTasksDone ? 'var(--green)' : 'var(--text-muted)' }}>
-                {myCheckin.length}/{TASKS.length} {allTasksDone ? '🎉' : ''}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-black" style={{ color: allTasksDone ? 'var(--green)' : 'var(--text-muted)' }}>
+                  {myCheckin.length}/{TASKS.length}
+                </span>
+                {allTasksDone && <span>🎉</span>}
+              </div>
             </div>
             <div>
               {TASKS.map((task, i) => {
@@ -252,18 +255,24 @@ export default function Dashboard() {
                   <button
                     key={task.id}
                     onClick={() => isToday && toggleTask(task.id)}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-all"
                     style={{
-                      background: done ? 'rgba(63,185,80,0.08)' : 'var(--bg-primary)',
+                      background: done ? 'rgba(16,217,138,0.06)' : 'transparent',
                       cursor: isToday ? 'pointer' : 'default',
                       borderTop: i > 0 ? '1px solid var(--border)' : 'none',
                     }}
                   >
-                    <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
-                         style={{ borderColor: done ? 'var(--green)' : 'var(--border)', background: done ? 'var(--green)' : 'transparent' }}>
-                      {done && <span className="text-white font-bold" style={{ fontSize: '10px' }}>✓</span>}
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
+                         style={{
+                           border: done ? 'none' : '2px solid var(--border)',
+                           background: done ? 'linear-gradient(135deg, #10d98a, #06b6d4)' : 'transparent',
+                           boxShadow: done ? '0 0 8px var(--green-glow)' : 'none',
+                         }}>
+                      {done && <span className="text-white font-black" style={{ fontSize: '10px' }}>✓</span>}
                     </div>
-                    <span className="text-sm">{task.emoji} {task.label}</span>
+                    <span className="text-sm" style={{ color: done ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                      {task.emoji} {task.label}
+                    </span>
                   </button>
                 )
               })}
@@ -271,46 +280,57 @@ export default function Dashboard() {
           </div>
 
           {/* Friend tasks */}
-          <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
-            <div className="px-4 py-3 flex items-center justify-between" style={{ background: 'var(--bg-secondary)' }}>
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: '#7c3aed', color: 'white' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+            <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black" style={{ background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white', boxShadow: '0 0 10px var(--purple-glow)' }}>
                   {friendProfile ? friendDisplayName[0].toUpperCase() : '?'}
                 </div>
-                <span className="font-semibold text-sm">{friendProfile ? friendDisplayName : (profile?.friend_email ? profile.friend_email.split('@')[0] : 'Tu amiga')}</span>
-                {!friendProfile && (
-                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
-                    {profile?.friend_email ? 'pendiente' : 'no vinculada'}
-                  </span>
-                )}
+                <div>
+                  <span className="font-bold text-sm">{friendProfile ? friendDisplayName : (profile?.friend_email?.split('@')[0] || 'Tu amiga')}</span>
+                  {!friendProfile && (
+                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                      {profile?.friend_email ? 'esperando...' : 'no vinculada'}
+                    </span>
+                  )}
+                </div>
               </div>
               {friendProfile && (
-                <span className="text-sm font-bold" style={{ color: friendAllDone ? 'var(--green)' : 'var(--text-muted)' }}>
-                  {friendCheckin.length}/{TASKS.length} {friendAllDone ? '🎉' : ''}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-black" style={{ color: friendAllDone ? 'var(--green)' : 'var(--text-muted)' }}>
+                    {friendCheckin.length}/{TASKS.length}
+                  </span>
+                  {friendAllDone && <span>🎉</span>}
+                </div>
               )}
             </div>
             <div>
               {TASKS.map((task, i) => {
                 const done = friendProfile ? friendCheckin.includes(task.id) : false
                 return (
-                  <div key={task.id} className="flex items-center gap-3 px-4 py-3"
+                  <div key={task.id} className="flex items-center gap-3 px-4 py-3.5 transition-all"
                        style={{
-                         background: done ? 'rgba(63,185,80,0.08)' : 'var(--bg-primary)',
+                         background: done ? 'rgba(16,217,138,0.06)' : 'transparent',
                          borderTop: i > 0 ? '1px solid var(--border)' : 'none',
-                         opacity: !friendProfile ? 0.4 : 1,
+                         opacity: !friendProfile ? 0.35 : 1,
                        }}>
-                    <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                         style={{ borderColor: done ? 'var(--green)' : 'var(--border)', background: done ? 'var(--green)' : 'transparent' }}>
-                      {done && <span className="text-white font-bold" style={{ fontSize: '10px' }}>✓</span>}
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                         style={{
+                           border: done ? 'none' : '2px solid var(--border)',
+                           background: done ? 'linear-gradient(135deg, #10d98a, #7c3aed)' : 'transparent',
+                           boxShadow: done ? '0 0 8px var(--green-glow)' : 'none',
+                         }}>
+                      {done && <span className="text-white font-black" style={{ fontSize: '10px' }}>✓</span>}
                     </div>
-                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{task.emoji} {task.label}</span>
+                    <span className="text-sm" style={{ color: done ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                      {task.emoji} {task.label}
+                    </span>
                   </div>
                 )
               })}
             </div>
             {!friendProfile && !profile?.friend_email && (
-              <div className="px-4 py-3 text-xs text-center" style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+              <div className="px-4 py-3 text-xs text-center" style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)' }}>
                 Registrate con el email de tu amiga para vincularla
               </div>
             )}
@@ -322,34 +342,32 @@ export default function Dashboard() {
         <div className="px-4 mt-4 space-y-4">
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl p-4" style={{ background: 'var(--bg-secondary)' }}>
-              <div className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>
-                {getCompletedCount(allMyCheckins)}
-              </div>
-              <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Días perfectos de {myDisplayName}</div>
+            <div className="rounded-2xl p-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+              <div className="text-3xl font-black gradient-text">{getCompletedCount(allMyCheckins)}</div>
+              <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Días perfectos</div>
+              <div className="text-xs font-bold mt-0.5" style={{ color: 'var(--accent)' }}>{myDisplayName}</div>
             </div>
-            <div className="rounded-xl p-4" style={{ background: 'var(--bg-secondary)' }}>
-              <div className="text-2xl font-bold" style={{ color: '#7c3aed' }}>
-                {getCompletedCount(allFriendCheckins)}
-              </div>
-              <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Días de {friendProfile ? friendDisplayName : 'tu amiga'}</div>
+            <div className="rounded-2xl p-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+              <div className="text-3xl font-black" style={{ color: '#a78bfa' }}>{getCompletedCount(allFriendCheckins)}</div>
+              <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Días perfectos</div>
+              <div className="text-xs font-bold mt-0.5" style={{ color: '#7c3aed' }}>{friendProfile ? friendDisplayName : 'Tu amiga'}</div>
             </div>
           </div>
 
           {/* Progress bar */}
-          <div className="rounded-xl p-4" style={{ background: 'var(--bg-secondary)' }}>
-            <div className="flex justify-between text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
-              <span>Progreso del reto</span>
-              <span>{currentDay}/75 días</span>
+          <div className="rounded-2xl p-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+            <div className="flex justify-between text-xs mb-2">
+              <span style={{ color: 'var(--text-muted)' }}>Progreso del reto</span>
+              <span className="font-bold" style={{ color: 'var(--accent)' }}>{currentDay}/75</span>
             </div>
-            <div className="h-3 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
-              <div className="h-full rounded-full" style={{ width: `${(currentDay / 75) * 100}%`, background: 'var(--accent)' }} />
+            <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
+              <div className="h-full rounded-full transition-all" style={{ width: `${(currentDay / 75) * 100}%`, background: 'linear-gradient(90deg, #22d3ee, #7c3aed)', boxShadow: '0 0 8px var(--accent-glow)' }} />
             </div>
           </div>
 
           {/* Calendar grid */}
-          <div className="rounded-xl p-4" style={{ background: 'var(--bg-secondary)' }}>
-            <div className="text-sm font-semibold mb-3">Calendario de 75 días</div>
+          <div className="rounded-2xl p-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+            <div className="text-xs font-black tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>CALENDARIO 75 DÍAS</div>
             <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(15, 1fr)' }}>
               {Array.from({ length: 75 }, (_, i) => {
                 const day = i + 1
@@ -360,10 +378,10 @@ export default function Dashboard() {
                 const isFuture = day > currentDay
 
                 let bg = 'var(--bg-tertiary)'
-                if (myDone && friendDone) bg = 'var(--green)'
-                else if (myDone) bg = 'var(--accent)'
-                else if (friendDone) bg = '#7c3aed'
-                else if (myPartial) bg = 'rgba(34,211,238,0.3)'
+                if (myDone && friendDone) bg = 'linear-gradient(135deg, #10d98a, #06b6d4)'
+                else if (myDone) bg = 'linear-gradient(135deg, #22d3ee, #06b6d4)'
+                else if (friendDone) bg = 'linear-gradient(135deg, #7c3aed, #a78bfa)'
+                else if (myPartial) bg = 'rgba(34,211,238,0.2)'
                 else if (isFuture) bg = 'var(--bg-hover)'
 
                 return (
@@ -375,7 +393,8 @@ export default function Dashboard() {
                       color: (myDone || friendDone) ? 'white' : 'var(--text-muted)',
                       outline: isCurrentDay ? '2px solid var(--accent)' : 'none',
                       outlineOffset: '1px',
-                      fontSize: '9px',
+                      fontSize: '8px',
+                      boxShadow: isCurrentDay ? '0 0 6px var(--accent-glow)' : 'none',
                     }}
                   >
                     {day}
@@ -383,7 +402,7 @@ export default function Dashboard() {
                 )
               })}
             </div>
-            <div className="flex flex-wrap gap-3 mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
+            <div className="flex flex-wrap gap-3 mt-3" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
               <span><span style={{ color: 'var(--accent)' }}>■</span> {myDisplayName}</span>
               <span><span style={{ color: '#7c3aed' }}>■</span> {friendProfile ? friendDisplayName : 'Tu amiga'}</span>
               <span><span style={{ color: 'var(--green)' }}>■</span> Ambas</span>
@@ -391,22 +410,22 @@ export default function Dashboard() {
           </div>
 
           {/* Task breakdown */}
-          <div className="rounded-xl p-4" style={{ background: 'var(--bg-secondary)' }}>
-            <div className="text-sm font-semibold mb-3">Tareas completadas</div>
+          <div className="rounded-2xl p-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+            <div className="text-xs font-black tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>TAREAS COMPLETADAS</div>
             {TASKS.map(task => {
               const myCount = allMyCheckins.filter(c => c.tasks.includes(task.id)).length
               const friendCount = allFriendCheckins.filter(c => c.tasks.includes(task.id)).length
               return (
-                <div key={task.id} className="mb-3">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span>{task.emoji} {task.label}</span>
-                    <span style={{ color: 'var(--text-muted)' }}>{myCount}d</span>
+                <div key={task.id} className="mb-4">
+                  <div className="flex justify-between text-xs mb-1.5">
+                    <span style={{ color: 'var(--text-secondary)' }}>{task.emoji} {task.label}</span>
+                    <span className="font-bold" style={{ color: 'var(--accent)' }}>{myCount}d</span>
                   </div>
-                  <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
-                    <div className="h-full rounded-full" style={{ width: `${(myCount / 75) * 100}%`, background: 'var(--accent)' }} />
+                  <div className="h-1.5 rounded-full overflow-hidden mb-0.5" style={{ background: 'var(--bg-tertiary)' }}>
+                    <div className="h-full rounded-full" style={{ width: `${(myCount / 75) * 100}%`, background: 'linear-gradient(90deg, #22d3ee, #06b6d4)', boxShadow: '0 0 4px var(--accent-glow)' }} />
                   </div>
-                  <div className="h-1.5 rounded-full overflow-hidden mt-0.5" style={{ background: 'var(--bg-tertiary)' }}>
-                    <div className="h-full rounded-full" style={{ width: `${(friendCount / 75) * 100}%`, background: '#7c3aed' }} />
+                  <div className="h-1 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
+                    <div className="h-full rounded-full" style={{ width: `${(friendCount / 75) * 100}%`, background: 'linear-gradient(90deg, #7c3aed, #a78bfa)' }} />
                   </div>
                 </div>
               )

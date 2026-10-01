@@ -1,22 +1,53 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #0d1117;
-  --bg-secondary: #161b22;
-  --bg-tertiary: #21262d;
-  --bg-hover: #30363d;
-  --text-primary: #e6edf3;
-  --text-secondary: #8b949e;
-  --text-muted: #6e7681;
-  --border: #21262d;
+  --bg-primary: #050810;
+  --bg-secondary: #0a0e1a;
+  --bg-tertiary: #0f1525;
+  --bg-hover: #151c30;
+  --text-primary: #e8edf8;
+  --text-secondary: #7a85a0;
+  --text-muted: #4a5268;
+  --border: #1a2035;
+  --border-glow: #22d3ee40;
   --accent: #22d3ee;
   --accent-hover: #06b6d4;
-  --green: #3fb950;
-  --orange: #f78166;
+  --accent-glow: #22d3ee20;
+  --purple: #7c3aed;
+  --purple-glow: #7c3aed20;
+  --green: #10d98a;
+  --green-glow: #10d98a20;
 }
 
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', Arial, Helvetica, sans-serif;
+}
+
+.glow-accent {
+  box-shadow: 0 0 20px var(--accent-glow), 0 0 40px var(--accent-glow);
+}
+
+.glow-border {
+  border: 1px solid var(--border-glow);
+  box-shadow: 0 0 15px var(--accent-glow), inset 0 0 15px var(--accent-glow);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #22d3ee 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  border-color: var(--border-glow);
 }

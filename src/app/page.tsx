@@ -28,12 +28,12 @@ export default function AuthPage() {
       if (error) {
         setError(error.message)
       } else if (data.user) {
-        // Crear perfil con email de amiga
         await supabase.from('profiles').upsert({
           id: data.user.id,
           email: email,
           friend_email: friendEmail || null,
           start_date: new Date().toISOString().split('T')[0],
+          display_name: null,
         })
         setError('Revisá tu email para confirmar la cuenta')
       }
@@ -42,12 +42,20 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--bg-primary)' }}>
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="text-5xl mb-3">🔥</div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Reto 75 Días</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
+      {/* Background glow */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, #22d3ee 0%, transparent 70%)' }} />
+      </div>
+
+      <div className="w-full max-w-sm relative z-10">
+        {/* Logo */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-glow)', boxShadow: '0 0 30px var(--accent-glow)' }}>
+            <span className="text-3xl">🔥</span>
+          </div>
+          <h1 className="text-3xl font-black tracking-tight gradient-text">RETO 75 DÍAS</h1>
+          <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
             {isLogin ? 'Continuá tu reto' : 'Empezá el reto con tu amiga'}
           </p>
         </div>
@@ -59,12 +67,14 @@ export default function AuthPage() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
-            className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2"
+            className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
             style={{
               background: 'var(--bg-secondary)',
               border: '1px solid var(--border)',
               color: 'var(--text-primary)',
             }}
+            onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+            onBlur={e => e.target.style.borderColor = 'var(--border)'}
           />
           <input
             type="password"
@@ -72,12 +82,14 @@ export default function AuthPage() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
-            className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2"
+            className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
             style={{
               background: 'var(--bg-secondary)',
               border: '1px solid var(--border)',
               color: 'var(--text-primary)',
             }}
+            onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+            onBlur={e => e.target.style.borderColor = 'var(--border)'}
           />
 
           {!isLogin && (
@@ -86,18 +98,19 @@ export default function AuthPage() {
               placeholder="Email de tu amiga (opcional)"
               value={friendEmail}
               onChange={e => setFriendEmail(e.target.value)}
-              className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2"
+              className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
               style={{
                 background: 'var(--bg-secondary)',
                 border: '1px solid var(--border)',
                 color: 'var(--text-primary)',
               }}
+              onFocus={e => e.target.style.borderColor = 'var(--purple)'}
+              onBlur={e => e.target.style.borderColor = 'var(--border)'}
             />
           )}
 
           {error && (
-            <p className={`text-sm text-center ${error.includes('Revisá') ? '' : 'text-red-400'}`}
-               style={error.includes('Revisá') ? { color: 'var(--accent)' } : {}}>
+            <p className="text-sm text-center" style={{ color: error.includes('Revisá') ? 'var(--accent)' : '#f87171' }}>
               {error}
             </p>
           )}
@@ -105,10 +118,14 @@ export default function AuthPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl px-4 py-3 font-semibold text-sm transition-colors disabled:opacity-50"
-            style={{ background: 'var(--accent)', color: '#0d1117' }}
+            className="w-full rounded-xl px-4 py-3 font-bold text-sm tracking-wide transition-all disabled:opacity-50"
+            style={{
+              background: 'linear-gradient(135deg, #22d3ee, #06b6d4)',
+              color: '#050810',
+              boxShadow: '0 0 20px var(--accent-glow)',
+            }}
           >
-            {loading ? 'Cargando...' : isLogin ? 'Ingresar' : 'Empezar el reto'}
+            {loading ? 'Cargando...' : isLogin ? 'INGRESAR' : 'EMPEZAR EL RETO'}
           </button>
         </form>
 

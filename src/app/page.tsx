@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 export default function AuthPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [displayName, setDisplayName] = useState('')
   const [friendEmail, setFriendEmail] = useState('')
   const [isLogin, setIsLogin] = useState(true)
   const [error, setError] = useState('')
@@ -33,7 +34,7 @@ export default function AuthPage() {
           email,
           friend_email: friendEmail || null,
           start_date: new Date().toISOString().split('T')[0],
-          display_name: null,
+          display_name: displayName.trim().toUpperCase().slice(0, 10) || null,
         })
         setError('CHEQUEÁ TU EMAIL!')
       }
@@ -102,6 +103,28 @@ export default function AuthPage() {
               onBlur={e => e.target.style.borderColor = 'var(--gray)'}
             />
           </div>
+
+          {!isLogin && (
+            <div>
+              <label style={{ color: 'var(--yellow)', fontSize: '8px', display: 'block', marginBottom: '6px' }}>TU NOMBRE (MAX 10)</label>
+              <input
+                type="text"
+                value={displayName}
+                onChange={e => setDisplayName(e.target.value.toUpperCase().slice(0, 10))}
+                placeholder="PLAYER 1"
+                className="w-full px-3 py-2.5 focus:outline-none"
+                style={{
+                  background: 'var(--bg2)',
+                  border: '3px solid var(--gray)',
+                  color: 'var(--white)',
+                  fontFamily: 'var(--pixel)',
+                  fontSize: '9px',
+                }}
+                onFocus={e => e.target.style.borderColor = 'var(--yellow)'}
+                onBlur={e => e.target.style.borderColor = 'var(--gray)'}
+              />
+            </div>
+          )}
 
           {!isLogin && (
             <div>

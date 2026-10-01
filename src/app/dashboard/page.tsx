@@ -18,6 +18,7 @@ type Profile = {
   email: string
   friend_email: string | null
   start_date: string
+  display_name: string | null
 }
 
 type CheckIn = {
@@ -38,6 +39,8 @@ export default function Dashboard() {
   const [view, setView] = useState<'hoy' | 'progreso'>('hoy')
   const [allMyCheckins, setAllMyCheckins] = useState<CheckIn[]>([])
   const [allFriendCheckins, setAllFriendCheckins] = useState<CheckIn[]>([])
+  const [editingName, setEditingName] = useState(false)
+  const [nameInput, setNameInput] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
@@ -63,10 +66,11 @@ export default function Dashboard() {
 
       let { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (!prof) {
-        prof = { id: user.id, email: user.email || '', friend_email: null, start_date: new Date().toISOString().split('T')[0] }
+        prof = { id: user.id, email: user.email || '', friend_email: null, start_date: new Date().toISOString().split('T')[0], display_name: null }
         await supabase.from('profiles').upsert(prof)
       }
       setProfile(prof)
+      setNameInput(prof.display_name || prof.email.split('@')[0])
 
       const start = new Date(prof.start_date)
       const today = new Date()
@@ -86,6 +90,14 @@ export default function Dashboard() {
     }
     init()
   }, [supabase, router, loadData])
+
+  async function saveName() {
+    if (!profile || !nameInput.trim()) return
+    const name = nameInput.trim()
+    await supabase.from('profiles').update({ display_name: name }).eq('id', profile.id)
+    setProfile({ ...profile, display_name: name })
+    setEditingName(false)
+  }
 
   async function toggleTask(taskId: string) {
     if (!profile) return
@@ -115,6 +127,9 @@ export default function Dashboard() {
   function getCompletedCount(checkins: CheckIn[]) {
     return checkins.filter(c => c.tasks.length === TASKS.length).length
   }
+
+  const myDisplayName = profile?.display_name || profile?.email.split('@')[0] || 'Vos'
+  const friendDisplayName = friendProfile?.display_name || friendProfile?.email.split('@')[0] || '?'
 
   if (loading) {
     return (
@@ -201,9 +216,30 @@ export default function Dashboard() {
             <div className="px-4 py-3 flex items-center justify-between" style={{ background: 'var(--bg-secondary)' }}>
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: 'var(--accent)', color: '#0d1117' }}>
-                  {profile?.email[0].toUpperCase()}
+                  {myDisplayName[0].toUpperCase()}
                 </div>
-                <span className="font-semibold text-sm">Vos</span>
+                {editingName ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      value={nameInput}
+                      onChange={e => setNameInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && saveName()}
+                      autoFocus
+                      className="text-sm font-semibold rounded px-2 py-0.5 w-32 focus:outline-none"
+                      style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)', border: '1px solid var(--accent)' }}
+                    />
+                    <button onClick={saveName} className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--accent)', color: '#0d1117' }}>✓</button>
+                    <button onClick={() => setEditingName(false)} className="text-xs" style={{ color: 'var(--text-muted)' }}>✕</button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setEditingName(true)}
+                    className="flex items-center gap-1 group"
+                  >
+                    <span className="font-semibold text-sm">{myDisplayName}</span>
+                    <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--text-muted)' }}>✏️</span>
+                  </button>
+                )}
               </div>
               <span className="text-sm font-bold" style={{ color: allTasksDone ? 'var(--green)' : 'var(--text-muted)' }}>
                 {myCheckin.length}/{TASKS.length} {allTasksDone ? '🎉' : ''}
@@ -235,42 +271,50 @@ export default function Dashboard() {
           </div>
 
           {/* Friend tasks */}
-          {friendProfile && (
-            <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
-              <div className="px-4 py-3 flex items-center justify-between" style={{ background: 'var(--bg-secondary)' }}>
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: '#7c3aed', color: 'white' }}>
-                    {friendProfile.email[0].toUpperCase()}
-                  </div>
-                  <span className="font-semibold text-sm">{friendProfile.email.split('@')[0]}</span>
+          <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+            <div className="px-4 py-3 flex items-center justify-between" style={{ background: 'var(--bg-secondary)' }}>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: '#7c3aed', color: 'white' }}>
+                  {friendProfile ? friendDisplayName[0].toUpperCase() : '?'}
                 </div>
+                <span className="font-semibold text-sm">{friendProfile ? friendDisplayName : (profile?.friend_email ? profile.friend_email.split('@')[0] : 'Tu amiga')}</span>
+                {!friendProfile && (
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
+                    {profile?.friend_email ? 'pendiente' : 'no vinculada'}
+                  </span>
+                )}
+              </div>
+              {friendProfile && (
                 <span className="text-sm font-bold" style={{ color: friendAllDone ? 'var(--green)' : 'var(--text-muted)' }}>
                   {friendCheckin.length}/{TASKS.length} {friendAllDone ? '🎉' : ''}
                 </span>
-              </div>
-              <div>
-                {TASKS.map((task, i) => {
-                  const done = friendCheckin.includes(task.id)
-                  return (
-                    <div key={task.id} className="flex items-center gap-3 px-4 py-3"
-                         style={{ background: done ? 'rgba(63,185,80,0.08)' : 'var(--bg-primary)', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
-                      <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                           style={{ borderColor: done ? 'var(--green)' : 'var(--border)', background: done ? 'var(--green)' : 'transparent' }}>
-                        {done && <span className="text-white font-bold" style={{ fontSize: '10px' }}>✓</span>}
-                      </div>
-                      <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{task.emoji} {task.label}</span>
+              )}
+            </div>
+            <div>
+              {TASKS.map((task, i) => {
+                const done = friendProfile ? friendCheckin.includes(task.id) : false
+                return (
+                  <div key={task.id} className="flex items-center gap-3 px-4 py-3"
+                       style={{
+                         background: done ? 'rgba(63,185,80,0.08)' : 'var(--bg-primary)',
+                         borderTop: i > 0 ? '1px solid var(--border)' : 'none',
+                         opacity: !friendProfile ? 0.4 : 1,
+                       }}>
+                    <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                         style={{ borderColor: done ? 'var(--green)' : 'var(--border)', background: done ? 'var(--green)' : 'transparent' }}>
+                      {done && <span className="text-white font-bold" style={{ fontSize: '10px' }}>✓</span>}
                     </div>
-                  )
-                })}
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{task.emoji} {task.label}</span>
+                  </div>
+                )
+              })}
+            </div>
+            {!friendProfile && !profile?.friend_email && (
+              <div className="px-4 py-3 text-xs text-center" style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+                Registrate con el email de tu amiga para vincularla
               </div>
-            </div>
-          )}
-
-          {!friendProfile && profile?.friend_email && (
-            <div className="rounded-xl p-4 text-sm text-center" style={{ background: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
-              Esperando que {profile.friend_email} se registre...
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 
@@ -282,16 +326,14 @@ export default function Dashboard() {
               <div className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>
                 {getCompletedCount(allMyCheckins)}
               </div>
-              <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Días perfectos tuyos</div>
+              <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Días perfectos de {myDisplayName}</div>
             </div>
-            {friendProfile && (
-              <div className="rounded-xl p-4" style={{ background: 'var(--bg-secondary)' }}>
-                <div className="text-2xl font-bold" style={{ color: '#7c3aed' }}>
-                  {getCompletedCount(allFriendCheckins)}
-                </div>
-                <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Días de {friendProfile.email.split('@')[0]}</div>
+            <div className="rounded-xl p-4" style={{ background: 'var(--bg-secondary)' }}>
+              <div className="text-2xl font-bold" style={{ color: '#7c3aed' }}>
+                {getCompletedCount(allFriendCheckins)}
               </div>
-            )}
+              <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Días de {friendProfile ? friendDisplayName : 'tu amiga'}</div>
+            </div>
           </div>
 
           {/* Progress bar */}
@@ -342,8 +384,8 @@ export default function Dashboard() {
               })}
             </div>
             <div className="flex flex-wrap gap-3 mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-              <span><span style={{ color: 'var(--accent)' }}>■</span> Vos</span>
-              {friendProfile && <span><span style={{ color: '#7c3aed' }}>■</span> {friendProfile.email.split('@')[0]}</span>}
+              <span><span style={{ color: 'var(--accent)' }}>■</span> {myDisplayName}</span>
+              <span><span style={{ color: '#7c3aed' }}>■</span> {friendProfile ? friendDisplayName : 'Tu amiga'}</span>
               <span><span style={{ color: 'var(--green)' }}>■</span> Ambas</span>
             </div>
           </div>
@@ -353,7 +395,7 @@ export default function Dashboard() {
             <div className="text-sm font-semibold mb-3">Tareas completadas</div>
             {TASKS.map(task => {
               const myCount = allMyCheckins.filter(c => c.tasks.includes(task.id)).length
-              const friendCount = friendProfile ? allFriendCheckins.filter(c => c.tasks.includes(task.id)).length : 0
+              const friendCount = allFriendCheckins.filter(c => c.tasks.includes(task.id)).length
               return (
                 <div key={task.id} className="mb-3">
                   <div className="flex justify-between text-xs mb-1">
@@ -363,11 +405,9 @@ export default function Dashboard() {
                   <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
                     <div className="h-full rounded-full" style={{ width: `${(myCount / 75) * 100}%`, background: 'var(--accent)' }} />
                   </div>
-                  {friendProfile && (
-                    <div className="h-1.5 rounded-full overflow-hidden mt-0.5" style={{ background: 'var(--bg-tertiary)' }}>
-                      <div className="h-full rounded-full" style={{ width: `${(friendCount / 75) * 100}%`, background: '#7c3aed' }} />
-                    </div>
-                  )}
+                  <div className="h-1.5 rounded-full overflow-hidden mt-0.5" style={{ background: 'var(--bg-tertiary)' }}>
+                    <div className="h-full rounded-full" style={{ width: `${(friendCount / 75) * 100}%`, background: '#7c3aed' }} />
+                  </div>
                 </div>
               )
             })}

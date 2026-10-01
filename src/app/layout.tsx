@@ -5,18 +5,18 @@ import './globals.css'
 const geist = Geist({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Centro de Costos',
-  description: 'Gestión de gastos personales',
+  title: 'Reto 75 Días',
+  description: 'Completá el reto de 75 días con tu amiga',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Centro de Costos',
+    title: 'Reto 75',
   },
 }
 
 export const viewport: Viewport = {
-  themeColor: '#6366f1',
+  themeColor: '#0d1117',
   width: 'device-width',
   initialScale: 1,
 }
@@ -24,7 +24,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${geist.className} h-full`}>
-      <body className="min-h-full bg-gray-950 text-white">{children}</body>
+      <body className="min-h-full">{children}</body>
     </html>
   )
 }

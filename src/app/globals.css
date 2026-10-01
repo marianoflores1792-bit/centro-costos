@@ -11,31 +11,12 @@
   --border: #21262d;
   --accent: #22d3ee;
   --accent-hover: #06b6d4;
-}
-
-[data-theme="light"] {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f6f8fa;
-  --bg-tertiary: #eaeef2;
-  --bg-hover: #d0d7de;
-  --text-primary: #1f2328;
-  --text-secondary: #656d76;
-  --text-muted: #9198a1;
-  --border: #d0d7de;
-  --accent: #0891b2;
-  --accent-hover: #0e7490;
-}
-
-@theme inline {
-  --color-background: var(--bg-primary);
-  --color-foreground: var(--text-primary);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --green: #3fb950;
+  --orange: #f78166;
 }
 
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
-  transition: background 0.2s, color 0.2s;
 }

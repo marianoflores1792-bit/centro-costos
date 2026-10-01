@@ -87,6 +87,37 @@ export default function Dashboard() {
 
       await loadData(user.id, friendId, day)
       setLoading(false)
+
+      // Suscripción real-time
+      const channel = supabase
+        .channel('checkins-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'checkins' }, (payload) => {
+          const row = payload.new as CheckIn
+          if (!row) return
+
+          if (row.user_id === user.id) {
+            setAllMyCheckins(prev => {
+              const without = prev.filter(c => c.day !== row.day)
+              return [...without, row]
+            })
+            setSelectedDay(prev => {
+              if (prev === row.day) setMyCheckin(row.tasks)
+              return prev
+            })
+          } else if (friendId && row.user_id === friendId) {
+            setAllFriendCheckins(prev => {
+              const without = prev.filter(c => c.day !== row.day)
+              return [...without, row]
+            })
+            setSelectedDay(prev => {
+              if (prev === row.day) setFriendCheckin(row.tasks)
+              return prev
+            })
+          }
+        })
+        .subscribe()
+
+      return () => { supabase.removeChannel(channel) }
     }
     init()
   }, [supabase, router, loadData])

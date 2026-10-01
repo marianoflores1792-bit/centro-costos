@@ -8,7 +8,6 @@ export default function AuthPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
-  const [friendEmail, setFriendEmail] = useState('')
   const [isLogin, setIsLogin] = useState(true)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -32,7 +31,6 @@ export default function AuthPage() {
         await supabase.from('profiles').upsert({
           id: data.user.id,
           email,
-          friend_email: friendEmail || null,
           start_date: new Date().toISOString().split('T')[0],
           display_name: displayName.trim().toUpperCase().slice(0, 10) || null,
         })
@@ -126,26 +124,6 @@ export default function AuthPage() {
             </div>
           )}
 
-          {!isLogin && (
-            <div>
-              <label style={{ color: 'var(--purple)', fontSize: '8px', display: 'block', marginBottom: '6px' }}>EMAIL AMIGA (OPC)</label>
-              <input
-                type="email"
-                value={friendEmail}
-                onChange={e => setFriendEmail(e.target.value)}
-                className="w-full px-3 py-2.5 focus:outline-none"
-                style={{
-                  background: 'var(--bg2)',
-                  border: '3px solid var(--gray)',
-                  color: 'var(--white)',
-                  fontFamily: 'var(--pixel)',
-                  fontSize: '9px',
-                }}
-                onFocus={e => e.target.style.borderColor = 'var(--purple)'}
-                onBlur={e => e.target.style.borderColor = 'var(--gray)'}
-              />
-            </div>
-          )}
 
           {error && (
             <div className="text-center py-2" style={{ color: error.includes('EMAIL') ? 'var(--green)' : 'var(--red)', fontSize: '8px', border: `2px solid ${error.includes('EMAIL') ? 'var(--green)' : 'var(--red)'}`, background: 'var(--bg2)' }}>

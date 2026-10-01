@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [showApoyos, setShowApoyos] = useState(false)
   const [lastMsg, setLastMsg] = useState<Message | null>(null)
   const [showMsgBanner, setShowMsgBanner] = useState(false)
+  const otherSubsRef = useRef<PushSubscriptionJSON[]>([])
 
   const router = useRouter()
   const supabase = createClient()
@@ -100,6 +101,39 @@ export default function Dashboard() {
       setMessages(msgs || [])
 
       setLoading(false)
+
+      // Push notifications
+      if ('serviceWorker' in navigator && 'PushManager' in window) {
+        try {
+          const reg = await navigator.serviceWorker.register('/sw.js')
+          const permission = await Notification.requestPermission()
+          if (permission === 'granted') {
+            let sub = await reg.pushManager.getSubscription()
+            if (!sub) {
+              sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+              })
+            }
+            const subJson = sub.toJSON()
+            // Guardar en Supabase
+            await supabase.from('push_subscriptions').upsert(
+              { user_id: user.id, subscription: subJson },
+              { onConflict: 'user_id' }
+            )
+            // Cargar suscripciones del otro
+            if (otherProf) {
+              const { data: otherSubs } = await supabase
+                .from('push_subscriptions')
+                .select('subscription')
+                .eq('user_id', otherProf.id)
+              otherSubsRef.current = (otherSubs || []).map((r: { subscription: PushSubscriptionJSON }) => r.subscription)
+            }
+          }
+        } catch {
+          // Push not supported or blocked — continue without it
+        }
+      }
     }
     init()
   }, [supabase, router])
@@ -139,6 +173,18 @@ export default function Dashboard() {
     if (!me) return
     await supabase.from('messages').insert({ from_user_id: me.id, message: msg })
     setShowApoyos(false)
+    // Enviar push si hay suscripciones del otro
+    if (otherSubsRef.current.length > 0) {
+      fetch('/api/push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscriptions: otherSubsRef.current,
+          title: `💪 ${myName} te manda apoyo!`,
+          body: msg,
+        }),
+      }).catch(() => {})
+    }
   }
 
   async function saveName() {

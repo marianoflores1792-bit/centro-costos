@@ -13,8 +13,11 @@ const TASKS = [
   { id: 'photo', emoji: '📸', label: 'FOTO DE PROGRESO' },
 ]
 
+const APOYOS = ['💪 VAMOS!', '🔥 LO ESTAS LOGRANDO!', '⭐ ORGULLOSA DE VOS!', '🏆 SIGUE ASI!', '❤️ JUNTAS LO LOGRAMOS!']
+
 type Profile = { id: string; email: string; display_name: string | null; start_date: string }
 type CheckIn = { user_id: string; day: number; tasks: string[] }
+type Message = { id: string; from_user_id: string; message: string; created_at: string }
 
 export default function Dashboard() {
   const [me, setMe] = useState<Profile | null>(null)
@@ -29,6 +32,10 @@ export default function Dashboard() {
   const [view, setView] = useState<'hoy' | 'progreso'>('hoy')
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState('')
+  const [messages, setMessages] = useState<Message[]>([])
+  const [showApoyos, setShowApoyos] = useState(false)
+  const [lastMsg, setLastMsg] = useState<Message | null>(null)
+  const [showMsgBanner, setShowMsgBanner] = useState(false)
 
   const router = useRouter()
   const supabase = createClient()
@@ -38,14 +45,22 @@ export default function Dashboard() {
 
   useEffect(() => { selectedDayRef.current = selectedDay }, [selectedDay])
 
+  function getStreak(checkins: CheckIn[], today: number): number {
+    let streak = 0
+    for (let d = today; d >= 1; d--) {
+      const c = checkins.find(c => c.day === d)
+      if (c && c.tasks.length === TASKS.length) streak++
+      else break
+    }
+    return streak
+  }
+
   useEffect(() => {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
-
       meIdRef.current = user.id
 
-      // Traer todos los perfiles
       const { data: profiles } = await supabase.from('profiles').select('*')
       if (!profiles) return
 
@@ -59,12 +74,10 @@ export default function Dashboard() {
       setMe(myProf)
       setNameInput(myProf.display_name || myProf.email?.split('@')[0] || '')
 
-      // El otro usuario es el primero que no soy yo
       const otherProf = profiles.find(p => p.id !== user.id) || null
       setOther(otherProf)
       if (otherProf) otherIdRef.current = otherProf.id
 
-      // Calcular día actual
       const start = new Date(myProf.start_date)
       const today = new Date()
       const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
@@ -73,7 +86,6 @@ export default function Dashboard() {
       setSelectedDay(day)
       selectedDayRef.current = day
 
-      // Traer todos los checkins
       const { data: checkins } = await supabase.from('checkins').select('*')
       const all: CheckIn[] = checkins || []
       const mine = all.filter(c => c.user_id === user.id)
@@ -83,19 +95,22 @@ export default function Dashboard() {
       setMyCheckin(mine.find(c => c.day === day)?.tasks || [])
       setOtherCheckin(theirs.find(c => c.day === day)?.tasks || [])
 
+      // Cargar mensajes
+      const { data: msgs } = await supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(20)
+      setMessages(msgs || [])
+
       setLoading(false)
     }
     init()
   }, [supabase, router])
 
-  // Real-time
+  // Real-time checkins + messages
   useEffect(() => {
     const channel = supabase
-      .channel('checkins-live')
+      .channel('live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'checkins' }, (payload) => {
         const row = payload.new as CheckIn
         if (!row) return
-
         if (row.user_id === meIdRef.current) {
           setAllMine(prev => [...prev.filter(c => c.day !== row.day), row])
           if (row.day === selectedDayRef.current) setMyCheckin(row.tasks)
@@ -104,10 +119,27 @@ export default function Dashboard() {
           if (row.day === selectedDayRef.current) setOtherCheckin(row.tasks)
         }
       })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+        const msg = payload.new as Message
+        if (!msg) return
+        setMessages(prev => [msg, ...prev])
+        // Mostrar banner solo si el mensaje es de la otra persona
+        if (msg.from_user_id !== meIdRef.current) {
+          setLastMsg(msg)
+          setShowMsgBanner(true)
+          setTimeout(() => setShowMsgBanner(false), 4000)
+        }
+      })
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
   }, [supabase])
+
+  async function sendApoyo(msg: string) {
+    if (!me) return
+    await supabase.from('messages').insert({ from_user_id: me.id, message: msg })
+    setShowApoyos(false)
+  }
 
   async function saveName() {
     if (!me || !nameInput.trim()) return
@@ -119,9 +151,7 @@ export default function Dashboard() {
 
   async function toggleTask(taskId: string) {
     if (!me) return
-    const updated = myCheckin.includes(taskId)
-      ? myCheckin.filter(t => t !== taskId)
-      : [...myCheckin, taskId]
+    const updated = myCheckin.includes(taskId) ? myCheckin.filter(t => t !== taskId) : [...myCheckin, taskId]
     setMyCheckin(updated)
     await supabase.from('checkins').upsert(
       { user_id: me.id, day: selectedDay, tasks: updated, updated_at: new Date().toISOString() },
@@ -137,7 +167,6 @@ export default function Dashboard() {
 
   const getDayCheckin = (checkins: CheckIn[], day: number) => checkins.find(c => c.day === day)?.tasks || []
   const getPerfectDays = (checkins: CheckIn[]) => checkins.filter(c => c.tasks.length === TASKS.length).length
-
   const myName = (me?.display_name || me?.email?.split('@')[0] || 'P1').toUpperCase().slice(0, 10)
   const otherName = (other?.display_name || other?.email?.split('@')[0] || 'P2').toUpperCase().slice(0, 10)
 
@@ -154,11 +183,21 @@ export default function Dashboard() {
   const otherDone = otherCheckin.length === TASKS.length
   const isToday = selectedDay === currentDay
   const pct = Math.round((currentDay / 75) * 100)
+  const myStreak = getStreak(allMine, currentDay)
+  const otherStreak = getStreak(allOther, currentDay)
 
   return (
     <div className="min-h-screen pb-24 relative" style={{ background: 'var(--bg)', fontFamily: 'var(--pixel)' }}>
       <div className="stars" />
       <div className="scanlines" />
+
+      {/* Banner mensaje entrante */}
+      {showMsgBanner && lastMsg && (
+        <div className="fixed top-0 left-0 right-0 z-50 px-4 py-3 text-center"
+             style={{ background: 'var(--purple)', borderBottom: '3px solid var(--white)', fontSize: '9px', color: 'white' }}>
+          ❤️ {otherName}: {lastMsg.message}
+        </div>
+      )}
 
       {/* Header */}
       <div className="sticky top-0 z-10 px-3 py-2" style={{ background: 'var(--bg)', borderBottom: '3px solid var(--yellow)' }}>
@@ -167,10 +206,13 @@ export default function Dashboard() {
             <div style={{ color: 'var(--yellow)', fontSize: '11px', textShadow: '2px 2px 0 #7a3a00' }}>🔥 RETO 75</div>
             <div style={{ color: 'var(--cyan)', fontSize: '7px', marginTop: '2px' }}>DIA {currentDay}/75 — {pct}%</div>
           </div>
-          <div className="flex items-center gap-3">
-            <div style={{ fontSize: '12px' }}>
-              {Array.from({ length: Math.min(3, Math.floor(getPerfectDays(allMine) / 5) + 1) }).map((_, i) => <span key={i}>❤️</span>)}
-            </div>
+          <div className="flex items-center gap-2">
+            {/* Racha */}
+            {myStreak > 0 && (
+              <div className="px-2 py-1" style={{ background: 'var(--bg2)', border: '2px solid var(--orange)', fontSize: '7px', color: 'var(--orange)' }}>
+                🔥{myStreak}
+              </div>
+            )}
             <button onClick={signOut} className="pixel-btn px-2 py-1" style={{ background: 'var(--bg3)', color: 'var(--gray)', fontSize: '7px' }}>EXIT</button>
           </div>
         </div>
@@ -207,7 +249,7 @@ export default function Dashboard() {
               style={{ background:'var(--bg2)', color:'var(--white)', fontSize:'14px', border:'3px solid var(--gray)', boxShadow:'3px 3px 0 #000' }}>►</button>
           </div>
 
-          {/* P1 — Yo */}
+          {/* P1 */}
           <div style={{ border:'3px solid var(--cyan)', background:'var(--bg2)', boxShadow:'4px 4px 0 #000' }}>
             <div className="px-3 py-2 flex items-center justify-between" style={{ borderBottom:'3px solid var(--cyan)', background:'#001a1a' }}>
               <div className="flex items-center gap-2">
@@ -226,6 +268,7 @@ export default function Dashboard() {
                     <span style={{ color:'var(--gray)', fontSize:'7px', marginLeft:'4px' }}>✏</span>
                   </button>
                 )}
+                {myStreak >= 2 && <span style={{ color:'var(--orange)', fontSize:'8px' }}>🔥{myStreak}</span>}
               </div>
               <span style={{ color: myDone ? 'var(--green)' : 'var(--yellow)', fontSize:'9px' }}>
                 {myDone ? '★ PERFECT!' : `${myCheckin.length}/${TASKS.length}`}
@@ -247,16 +290,55 @@ export default function Dashboard() {
             })}
           </div>
 
-          {/* P2 — Otra */}
+          {/* Botón apoyo */}
+          <div className="relative">
+            <button onClick={() => setShowApoyos(!showApoyos)}
+              className="pixel-btn w-full py-2.5"
+              style={{ background:'var(--purple)', color:'white', fontSize:'8px', border:'3px solid var(--white)', boxShadow:'3px 3px 0 #3a0060' }}>
+              ❤️ MANDAR APOYO A {otherName}
+            </button>
+            {showApoyos && (
+              <div className="absolute left-0 right-0 z-20 mt-1" style={{ background:'var(--bg2)', border:'3px solid var(--purple)', boxShadow:'4px 4px 0 #000' }}>
+                {APOYOS.map(msg => (
+                  <button key={msg} onClick={() => sendApoyo(msg)}
+                    className="w-full px-3 py-3 text-left"
+                    style={{ fontSize:'8px', color:'var(--white)', borderBottom:'2px solid #1a1a3a' }}>
+                    {msg}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Mensajes recientes */}
+          {messages.length > 0 && (
+            <div style={{ border:'3px solid var(--gray)', background:'var(--bg2)', boxShadow:'4px 4px 0 #000' }}>
+              <div className="px-3 py-2" style={{ borderBottom:'3px solid var(--gray)', background:'var(--bg3)' }}>
+                <span style={{ color:'var(--gray)', fontSize:'8px' }}>❤️ MENSAJES</span>
+              </div>
+              {messages.slice(0, 3).map(msg => {
+                const fromMe = msg.from_user_id === me?.id
+                return (
+                  <div key={msg.id} className="px-3 py-2" style={{ borderBottom:'1px solid #1a1a3a' }}>
+                    <span style={{ color: fromMe ? 'var(--cyan)' : 'var(--purple)', fontSize:'7px' }}>
+                      {fromMe ? myName : otherName}:
+                    </span>
+                    <span style={{ color:'var(--white)', fontSize:'7px', marginLeft:'6px' }}>{msg.message}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* P2 */}
           <div style={{ border:'3px solid var(--purple)', background:'var(--bg2)', boxShadow:'4px 4px 0 #000' }}>
             <div className="px-3 py-2 flex items-center justify-between" style={{ borderBottom:'3px solid var(--purple)', background:'#0f001a' }}>
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 flex items-center justify-center font-black" style={{ background:'var(--purple)', color:'#0f001a', fontSize:'9px' }}>
                   {other ? otherName[0] : '?'}
                 </div>
-                <span style={{ color:'var(--purple)', fontSize:'9px' }}>
-                  P2: {other ? otherName : <span className="blink">OFFLINE</span>}
-                </span>
+                <span style={{ color:'var(--purple)', fontSize:'9px' }}>P2: {other ? otherName : <span className="blink">OFFLINE</span>}</span>
+                {otherStreak >= 2 && <span style={{ color:'var(--orange)', fontSize:'8px' }}>🔥{otherStreak}</span>}
               </div>
               {other && (
                 <span style={{ color: otherDone ? 'var(--green)' : 'var(--yellow)', fontSize:'9px' }}>
@@ -283,17 +365,35 @@ export default function Dashboard() {
 
       {view === 'progreso' && (
         <div className="px-3 mt-4 space-y-4 relative z-10">
+          {/* Rachas */}
+          <div style={{ border:'3px solid var(--orange)', background:'var(--bg2)', boxShadow:'4px 4px 0 #000' }}>
+            <div className="px-3 py-2 text-center" style={{ borderBottom:'3px solid var(--orange)', background:'#1a0800' }}>
+              <span style={{ color:'var(--orange)', fontSize:'9px' }}>🔥 RACHAS ACTUALES</span>
+            </div>
+            <div className="px-3 py-3 space-y-2">
+              <div className="flex justify-between items-center">
+                <span style={{ color:'var(--cyan)', fontSize:'8px' }}>{myName}</span>
+                <span style={{ color:'var(--orange)', fontSize:'14px', textShadow:'2px 2px 0 #7a3a00' }}>🔥{myStreak}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span style={{ color:'var(--purple)', fontSize:'8px' }}>{other ? otherName : 'P2'}</span>
+                <span style={{ color:'var(--orange)', fontSize:'14px', textShadow:'2px 2px 0 #7a3a00' }}>🔥{otherStreak}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* High scores */}
           <div style={{ border:'3px solid var(--yellow)', background:'var(--bg2)', boxShadow:'4px 4px 0 #000' }}>
             <div className="px-3 py-2 text-center" style={{ borderBottom:'3px solid var(--yellow)', background:'#1a1000' }}>
-              <span style={{ color:'var(--yellow)', fontSize:'9px' }}>★ HIGH SCORES ★</span>
+              <span style={{ color:'var(--yellow)', fontSize:'9px' }}>★ DIAS PERFECTOS ★</span>
             </div>
             <div className="px-3 py-3 space-y-3">
               <div className="flex justify-between items-center">
-                <span style={{ color:'var(--cyan)', fontSize:'8px' }}>P1 {myName}</span>
+                <span style={{ color:'var(--cyan)', fontSize:'8px' }}>{myName}</span>
                 <span style={{ color:'var(--yellow)', fontSize:'12px', textShadow:'2px 2px 0 #7a3a00' }}>{String(getPerfectDays(allMine)).padStart(3,'0')}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span style={{ color:'var(--purple)', fontSize:'8px' }}>P2 {other ? otherName : '???'}</span>
+                <span style={{ color:'var(--purple)', fontSize:'8px' }}>{other ? otherName : '???'}</span>
                 <span style={{ color:'var(--yellow)', fontSize:'12px', textShadow:'2px 2px 0 #7a3a00' }}>{String(getPerfectDays(allOther)).padStart(3,'0')}</span>
               </div>
               <div style={{ borderTop:'2px solid var(--gray)', paddingTop:'8px' }}>
@@ -307,6 +407,7 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Mapa */}
           <div style={{ border:'3px solid var(--gray)', background:'var(--bg2)', boxShadow:'4px 4px 0 #000' }}>
             <div className="px-3 py-2" style={{ borderBottom:'3px solid var(--gray)', background:'var(--bg3)' }}>
               <span style={{ color:'var(--gray)', fontSize:'8px' }}>★ MAP — 75 NIVELES</span>
@@ -327,8 +428,7 @@ export default function Dashboard() {
                   return (
                     <div key={day} className="aspect-square flex items-center justify-center"
                       style={{ background:bg, color, fontSize:'6px', fontFamily:'var(--pixel)',
-                        outline: day===currentDay ? '2px solid var(--yellow)' : 'none', outlineOffset:'1px',
-                        boxShadow: day===currentDay ? '0 0 4px var(--yellow)' : 'none' }}>
+                        outline: day===currentDay ? '2px solid var(--yellow)' : 'none', outlineOffset:'1px' }}>
                       {day}
                     </div>
                   )
@@ -342,6 +442,7 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Stats */}
           <div style={{ border:'3px solid var(--gray)', background:'var(--bg2)', boxShadow:'4px 4px 0 #000' }}>
             <div className="px-3 py-2" style={{ borderBottom:'3px solid var(--gray)', background:'var(--bg3)' }}>
               <span style={{ color:'var(--gray)', fontSize:'8px' }}>★ STATS</span>

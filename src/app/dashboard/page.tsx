@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 
 const TASKS = [
   { id: 'workout1', emoji: '💪', label: 'ENTRENAR 45MIN #1' },
-  { id: 'workout2', emoji: '🏃', label: 'ENTRENAR 45MIN #2' },
+  { id: 'workout2', emoji: '🧘', label: 'MEDITAR' },
   { id: 'water', emoji: '💧', label: '4 LITROS DE AGUA' },
   { id: 'diet', emoji: '🥗', label: 'SEGUIR LA DIETA' },
   { id: 'read', emoji: '📖', label: 'LEER 10 PAGINAS' },

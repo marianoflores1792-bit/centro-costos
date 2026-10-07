@@ -292,10 +292,11 @@ export default function Dashboard() {
               style={{ background:'var(--bg2)', color:'var(--white)', fontSize:'14px', border:'3px solid var(--gray)', boxShadow:'3px 3px 0 #000' }}>◄</button>
             <div className="text-center">
               <div style={{ color:'var(--yellow)', fontSize:'12px', textShadow:'2px 2px 0 #7a3a00' }}>DIA {selectedDay}</div>
-              {!isToday && <div className="blink mt-1" style={{ color:'var(--red)', fontSize:'7px' }}>READ ONLY</div>}
+              {!isToday && <div className="mt-1" style={{ color:'var(--gray)', fontSize:'7px' }}>DIA ANTERIOR</div>}
             </div>
             <button onClick={() => { const d = Math.min(currentDay, selectedDay+1); setSelectedDay(d); selectedDayRef.current=d; setMyCheckin(getDayCheckin(allMine,d)); setOtherCheckin(getDayCheckin(allOther,d)) }}
               disabled={selectedDay>=currentDay} className="pixel-btn w-10 h-10 flex items-center justify-center"
+
               style={{ background:'var(--bg2)', color:'var(--white)', fontSize:'14px', border:'3px solid var(--gray)', boxShadow:'3px 3px 0 #000' }}>►</button>
           </div>
 
@@ -327,9 +328,9 @@ export default function Dashboard() {
             {TASKS.map((task, i) => {
               const done = myCheckin.includes(task.id)
               return (
-                <button key={task.id} onClick={() => isToday && toggleTask(task.id)}
+                <button key={task.id} onClick={() => toggleTask(task.id)}
                   className="w-full flex items-center gap-3 px-3 py-3"
-                  style={{ background: done ? '#001a00' : 'transparent', borderTop: i>0 ? '2px solid #1a1a3a' : 'none', cursor: isToday ? 'pointer' : 'default' }}>
+                  style={{ background: done ? '#001a00' : 'transparent', borderTop: i>0 ? '2px solid #1a1a3a' : 'none', cursor: 'pointer' }}>
                   <div className="w-5 h-5 flex items-center justify-center flex-shrink-0"
                     style={{ border:`2px solid ${done ? 'var(--green)' : 'var(--gray)'}`, background: done ? 'var(--green)' : 'transparent' }}>
                     {done && <span style={{ color:'#001a00', fontSize:'8px', fontWeight:'bold' }}>✓</span>}

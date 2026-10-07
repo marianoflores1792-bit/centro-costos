@@ -78,8 +78,10 @@ export default function Dashboard() {
       setOther(otherProf)
       if (otherProf) otherIdRef.current = otherProf.id
 
+      const chileToday = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' }))
+      const chileDate = `${chileToday.getFullYear()}-${String(chileToday.getMonth()+1).padStart(2,'0')}-${String(chileToday.getDate()).padStart(2,'0')}`
       const start = new Date(myProf.start_date)
-      const today = new Date()
+      const today = new Date(chileDate)
       const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
       const day = Math.min(Math.max(diff, 1), 75)
       setCurrentDay(day)
@@ -96,8 +98,7 @@ export default function Dashboard() {
       setOtherCheckin(theirs.find(c => c.day === day)?.tasks || [])
 
       // Cargar mensajes
-      const today = new Date().toISOString().split('T')[0]
-      const { data: msgs } = await supabase.from('messages').select('*').gte('created_at', today).order('created_at', { ascending: false }).limit(20)
+      const { data: msgs } = await supabase.from('messages').select('*').gte('created_at', chileDate).order('created_at', { ascending: false }).limit(20)
       setMessages(msgs || [])
 
       setLoading(false)
@@ -156,8 +157,9 @@ export default function Dashboard() {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
         const msg = payload.new as Message
         if (!msg) return
-        const todayDate = new Date().toISOString().split('T')[0]
-        if (!msg.created_at.startsWith(todayDate)) return
+        const chileNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' }))
+        const todayChile = `${chileNow.getFullYear()}-${String(chileNow.getMonth()+1).padStart(2,'0')}-${String(chileNow.getDate()).padStart(2,'0')}`
+        if (!msg.created_at.startsWith(todayChile)) return
         setMessages(prev => [msg, ...prev])
         // Mostrar banner solo si el mensaje es de la otra persona
         if (msg.from_user_id !== meIdRef.current) {

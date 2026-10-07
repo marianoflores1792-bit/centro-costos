@@ -12,6 +12,84 @@ const TASKS = [
   { id: 'photo', emoji: '📸', label: 'FOTO DE PROGRESO' },
 ]
 
+const DAILY_CHALLENGES = [
+  { emoji: '🦵', text: '50 SENTADILLAS EXTRA' },
+  { emoji: '📵', text: 'SIN REDES HASTA LAS 12PM' },
+  { emoji: '🙏', text: 'MEDITAR 10 MINUTOS' },
+  { emoji: '🌿', text: 'SIN AZUCAR AGREGADA HOY' },
+  { emoji: '🌙', text: 'DORMIR ANTES DE LAS 11PM' },
+  { emoji: '🧘', text: 'ESTIRAMIENTO 15 MINUTOS' },
+  { emoji: '☕', text: 'SIN CAFEINA HOY' },
+  { emoji: '🥗', text: 'COMER UNA ENSALADA EXTRA' },
+  { emoji: '📝', text: 'ESCRIBIR 3 COSAS POR LAS QUE AGRADECES' },
+  { emoji: '🚶', text: '10.000 PASOS HOY' },
+  { emoji: '🍟', text: 'SIN FRITURAS HOY' },
+  { emoji: '📖', text: 'LEER 20 PAGINAS EXTRA' },
+  { emoji: '💧', text: 'TOMAR AGUA ANTES DE CADA COMIDA' },
+  { emoji: '🧹', text: 'ORDENAR TU ESPACIO DE TRABAJO' },
+  { emoji: '🏋️', text: '3 SERIES DE PLANCHA DE 1 MINUTO' },
+  { emoji: '🎯', text: 'ESCRIBIR TUS METAS DE LA SEMANA' },
+  { emoji: '🚫', text: 'SIN SNACKS ENTRE COMIDAS' },
+  { emoji: '🧠', text: 'APRENDER ALGO NUEVO EN 20 MINUTOS' },
+  { emoji: '🦵', text: '100 SALTOS DE CUERDA O JUMPING JACKS' },
+  { emoji: '📵', text: 'SIN CELULAR LA PRIMERA HORA DEL DIA' },
+  { emoji: '🌅', text: 'LEVANTARTE 30 MIN ANTES' },
+  { emoji: '🥤', text: '3 LITROS DE AGUA HOY' },
+  { emoji: '💪', text: '30 FLEXIONES EXTRA' },
+  { emoji: '📝', text: 'PLANIFICAR EL DIA ANTES DE EMPEZAR' },
+  { emoji: '🧘', text: 'RESPIRACION PROFUNDA 5 MINUTOS' },
+  { emoji: '🚫', text: 'SIN QUEJARTE EN TODO EL DIA' },
+  { emoji: '🌿', text: 'COMER SOLO COMIDA NATURAL HOY' },
+  { emoji: '🏃', text: 'SUBIR ESCALERAS TODO EL DIA' },
+  { emoji: '📖', text: 'LEER EN VEZ DE VER TELE POR 1 HORA' },
+  { emoji: '💤', text: '8 HORAS DE SUENO ESTA NOCHE' },
+  { emoji: '🦵', text: '3 SERIES DE 20 LUNGES' },
+  { emoji: '🎯', text: 'REVISAR Y AJUSTAR TUS METAS' },
+  { emoji: '📵', text: 'SIN REDES SOCIALES DESPUES DE LAS 9PM' },
+  { emoji: '🥗', text: 'PREPARAR TU COMIDA CON ANTICIPACION' },
+  { emoji: '💧', text: 'EMPEZAR EL DIA CON 2 VASOS DE AGUA' },
+  { emoji: '🧹', text: 'ORDENAR TU CUARTO COMPLETO' },
+  { emoji: '🏋️', text: 'DOBLE DURACION EN EL ENTRENAMIENTO' },
+  { emoji: '🧠', text: 'PODCAST EDUCATIVO DE 30 MINUTOS' },
+  { emoji: '🌅', text: 'VER EL AMANECER O ATARDECER' },
+  { emoji: '🚫', text: 'SIN ALCOHOL HOY' },
+  { emoji: '💪', text: '50 ABDOMINALES EXTRA' },
+  { emoji: '📝', text: 'ESCRIBIR COMO TE SIENTES EN EL RETO' },
+  { emoji: '🙏', text: 'AGRADECER A ALGUIEN HOY' },
+  { emoji: '🥤', text: 'SIN BEBIDAS AZUCARADAS' },
+  { emoji: '🧘', text: 'YOGA POR 20 MINUTOS' },
+  { emoji: '🦵', text: '200 SALTOS EN ESCALERA' },
+  { emoji: '📵', text: 'UN DIA SIN INSTAGRAM O TIKTOK' },
+  { emoji: '🌿', text: 'COMER 5 FRUTAS O VERDURAS' },
+  { emoji: '💤', text: 'ACOSTARTE A LAS 10PM' },
+  { emoji: '🏃', text: 'CAMINAR 30 MINUTOS AL AIRE LIBRE' },
+  { emoji: '🎯', text: 'VISUALIZAR TU META DEL RETO POR 10 MIN' },
+  { emoji: '💧', text: 'SOLO AGUA Y AGUA CON GAS HOY' },
+  { emoji: '🏋️', text: '4 SERIES EN CADA EJERCICIO HOY' },
+  { emoji: '📖', text: 'TERMINAR UN CAPITULO COMPLETO' },
+  { emoji: '🧹', text: 'DEJAR LA COCINA IMPECABLE' },
+  { emoji: '💪', text: 'EJERCICIO EN LA MANANA ANTES DE LAS 9AM' },
+  { emoji: '🧠', text: 'APRENDER 10 PALABRAS EN OTRO IDIOMA' },
+  { emoji: '🚫', text: 'SIN COMIDA CHATARRA EN TODO EL DIA' },
+  { emoji: '🌅', text: 'SALIR A CAMINAR SIN CELULAR' },
+  { emoji: '🙏', text: 'ESCRIBIR 5 FORTALEZAS TUYAS' },
+  { emoji: '🦵', text: 'WALL SIT DE 3 MINUTOS TOTAL' },
+  { emoji: '📵', text: 'CELULAR EN SILENCIO TODO EL DIA' },
+  { emoji: '🥗', text: 'SIN HARINAS REFINADAS HOY' },
+  { emoji: '💤', text: 'RUTINA DE SUENO: MISMO HORARIO' },
+  { emoji: '🏃', text: 'TROTAR 20 MINUTOS SIN PARAR' },
+  { emoji: '📝', text: 'HACER UNA LISTA DE LO QUE LOGRASTE ESTE MES' },
+  { emoji: '🧘', text: 'MEDITACION GUIADA DE 15 MINUTOS' },
+  { emoji: '💧', text: 'HIDRATARTE CADA HORA' },
+  { emoji: '🏋️', text: 'NUEVO EJERCICIO QUE NUNCA HAYAS HECHO' },
+  { emoji: '🎯', text: 'PLANIFICAR LA PROXIMA SEMANA' },
+  { emoji: '🌿', text: 'DIA VEGETARIANO COMPLETO' },
+  { emoji: '💪', text: '75 BURPEES — UN BURPEE POR DIA DEL RETO' },
+  { emoji: '📖', text: 'LEER 30 PAGINAS HOY' },
+  { emoji: '🙏', text: 'REFLEXIONAR: QUE CAMBIASTE EN 75 DIAS' },
+  { emoji: '🎉', text: 'CELEBRAR: LO LOGRARON JUNTAS!' },
+]
+
 const APOYOS = ['🔥 VAMOS QUE NO LLEGAMOS AL DIA 75 DURMIENDO!', '😂 RECUERDA: YO TAMBIEN ESTOY CANSADA Y LO HICE IGUAL', '🥗 ESA PIZZA NO CUENTA COMO DIETA...', '📸 LA FOTO NO SE SACA SOLA!']
 
 type Profile = { id: string; email: string; display_name: string | null; start_date: string }
@@ -35,6 +113,8 @@ export default function Dashboard() {
   const [showApoyos, setShowApoyos] = useState(false)
   const [lastMsg, setLastMsg] = useState<Message | null>(null)
   const [showMsgBanner, setShowMsgBanner] = useState(false)
+  const [myBonus, setMyBonus] = useState<number[]>([])
+  const [otherBonus, setOtherBonus] = useState<number[]>([])
   const otherSubsRef = useRef<PushSubscriptionJSON[]>([])
 
   const router = useRouter()
@@ -97,6 +177,12 @@ export default function Dashboard() {
       setMyCheckin(mine.find(c => c.day === day)?.tasks || [])
       setOtherCheckin(theirs.find(c => c.day === day)?.tasks || [])
 
+      // Cargar bonus completados
+      const { data: bonusData } = await supabase.from('bonus_checkins').select('*')
+      const bonusAll = bonusData || []
+      setMyBonus(bonusAll.filter((b: {user_id: string; day: number}) => b.user_id === user.id).map((b: {user_id: string; day: number}) => b.day))
+      if (otherProf) setOtherBonus(bonusAll.filter((b: {user_id: string; day: number}) => b.user_id === otherProf.id).map((b: {user_id: string; day: number}) => b.day))
+
       // Cargar mensajes
       const { data: msgs } = await supabase.from('messages').select('*').gte('created_at', chileDate).order('created_at', { ascending: false }).limit(20)
       setMessages(msgs || [])
@@ -154,6 +240,12 @@ export default function Dashboard() {
           if (row.day === selectedDayRef.current) setOtherCheckin(row.tasks)
         }
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bonus_checkins' }, (payload) => {
+        const row = payload.new as { user_id: string; day: number }
+        if (!row) return
+        if (row.user_id === meIdRef.current) setMyBonus(prev => prev.includes(row.day) ? prev : [...prev, row.day])
+        else if (row.user_id === otherIdRef.current) setOtherBonus(prev => prev.includes(row.day) ? prev : [...prev, row.day])
+      })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
         const msg = payload.new as Message
         if (!msg) return
@@ -197,6 +289,17 @@ export default function Dashboard() {
     await supabase.from('profiles').update({ display_name: name }).eq('id', me.id)
     setMe({ ...me, display_name: name })
     setEditingName(false)
+  }
+
+  async function toggleBonus(day: number) {
+    if (!me) return
+    if (myBonus.includes(day)) {
+      await supabase.from('bonus_checkins').delete().eq('user_id', me.id).eq('day', day)
+      setMyBonus(prev => prev.filter(d => d !== day))
+    } else {
+      await supabase.from('bonus_checkins').upsert({ user_id: me.id, day })
+      setMyBonus(prev => [...prev, day])
+    }
   }
 
   async function toggleTask(taskId: string) {
@@ -341,6 +444,31 @@ export default function Dashboard() {
             })}
           </div>
 
+          {/* Reto del día */}
+          {(() => {
+            const challenge = DAILY_CHALLENGES[(selectedDay - 1) % DAILY_CHALLENGES.length]
+            const myDone = myBonus.includes(selectedDay)
+            const otherDone = otherBonus.includes(selectedDay)
+            return (
+              <div style={{ border: `3px solid ${myDone ? 'var(--green)' : 'var(--orange)'}`, background: 'var(--bg2)', boxShadow: '4px 4px 0 #000' }}>
+                <div className="px-3 py-2 flex items-center justify-between" style={{ borderBottom: `3px solid ${myDone ? 'var(--green)' : 'var(--orange)'}`, background: myDone ? '#001a00' : '#1a0800' }}>
+                  <span style={{ color: myDone ? 'var(--green)' : 'var(--orange)', fontSize: '8px' }}>⭐ RETO BONUS DIA {selectedDay}</span>
+                  <span style={{ color: 'var(--yellow)', fontSize: '8px' }}>+3 🪙</span>
+                </div>
+                <button onClick={() => toggleBonus(selectedDay)} className="w-full flex items-center gap-3 px-3 py-3">
+                  <div className="w-5 h-5 flex items-center justify-center flex-shrink-0"
+                    style={{ border: `2px solid ${myDone ? 'var(--green)' : 'var(--orange)'}`, background: myDone ? 'var(--green)' : 'transparent' }}>
+                    {myDone && <span style={{ color: '#001a00', fontSize: '8px', fontWeight: 'bold' }}>✓</span>}
+                  </div>
+                  <span style={{ color: myDone ? 'var(--green)' : 'var(--white)', fontSize: '8px', textAlign: 'left' }}>{challenge.emoji} {challenge.text}</span>
+                </button>
+                {otherDone && (
+                  <div className="px-3 pb-2" style={{ fontSize: '7px', color: 'var(--purple)' }}>✓ {otherName} también lo completó!</div>
+                )}
+              </div>
+            )
+          })()}
+
           {/* Botón apoyo */}
           <div className="relative">
             <button onClick={() => setShowApoyos(!showApoyos)}
@@ -429,6 +557,26 @@ export default function Dashboard() {
               <div className="flex justify-between items-center">
                 <span style={{ color:'var(--purple)', fontSize:'8px' }}>{other ? otherName : 'P2'}</span>
                 <span style={{ color:'var(--orange)', fontSize:'14px', textShadow:'2px 2px 0 #7a3a00' }}>🔥{otherStreak}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Monedas */}
+          <div style={{ border:'3px solid var(--yellow)', background:'var(--bg2)', boxShadow:'4px 4px 0 #000' }}>
+            <div className="px-3 py-2 text-center" style={{ borderBottom:'3px solid var(--yellow)', background:'#1a1000' }}>
+              <span style={{ color:'var(--yellow)', fontSize:'9px' }}>🪙 MONEDAS</span>
+            </div>
+            <div className="px-3 py-3 space-y-2">
+              <div className="flex justify-between items-center">
+                <span style={{ color:'var(--cyan)', fontSize:'8px' }}>{myName}</span>
+                <span style={{ color:'var(--yellow)', fontSize:'12px' }}>{getPerfectDays(allMine)*10 + myBonus.length*3} 🪙</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span style={{ color:'var(--purple)', fontSize:'8px' }}>{other ? otherName : 'P2'}</span>
+                <span style={{ color:'var(--yellow)', fontSize:'12px' }}>{getPerfectDays(allOther)*10 + otherBonus.length*3} 🪙</span>
+              </div>
+              <div style={{ fontSize:'7px', color:'var(--gray)', borderTop:'1px solid var(--gray)', paddingTop:'6px' }}>
+                DIA PERFECTO = 10🪙 · RETO BONUS = 3🪙
               </div>
             </div>
           </div>
